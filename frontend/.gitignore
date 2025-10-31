@@ -4,3 +4,4 @@ dist
 .env
 dev-dist
 .vscode
+/node_modules
