@@ -5,6 +5,8 @@ import com.bodyteam.nutrichat.dto.ChatResponse;
 import com.bodyteam.nutrichat.dto.UploadResponse;
 import com.bodyteam.nutrichat.service.ChatService;
 import com.bodyteam.nutrichat.service.DocumentService;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,15 +15,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class DocumentController {
 
   private final DocumentService documentService;
   private final ChatService chatService;
 
-  public DocumentController(DocumentService documentService, ChatService chatService) {
-    this.documentService = documentService;
-    this.chatService = chatService;
-  }
 
   @PostMapping("/documents/upload")
   public ResponseEntity<UploadResponse> uploadDocument(@RequestParam("file") MultipartFile file) {
@@ -36,5 +35,10 @@ public class DocumentController {
     String userId = "user-123";
     ChatResponse resp = chatService.answerQuestion(userId, req.getDocumentId(), req.getQuestion());
     return ResponseEntity.ok(resp);
+  }
+
+  @GetMapping("/document/{document_id}")
+  public ResponseEntity<Map<String, String>> getDocument(@PathVariable("document_id") String documentId) {
+    return ResponseEntity.ok(documentService.getDocumentById(documentId));
   }
 }

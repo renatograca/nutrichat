@@ -5,7 +5,7 @@ export function register() {
     registerSW({
       onNeedRefresh() {
         if (confirm('Nova versão disponível. Recarregar?')) {
-          window.location.reload()
+          // window.location.reload()
         }
       },
       onOfflineReady() {

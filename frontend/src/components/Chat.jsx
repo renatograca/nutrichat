@@ -1,8 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-
-// Mock de configuração. O documentId é mockado para habilitar o chat.
-const BASE_URL = 'http://localhost:8080'
-const MOCK_DOCUMENT_ID = "mock-plan-123" 
+import { uploadDocument, sendQuestion as sendChatQuestion } from '../service/chatService'
 
 // --- Ícones SVG ---
 const MenuIcon = (props) => (
@@ -18,6 +15,7 @@ const ProfileIcon = (props) => (
   </svg>
 )
 
+// Ícone de Avião/Envio (Mantido, mas agora é usado no botão de envio)
 const SendIcon = (props) => (
   <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -31,19 +29,28 @@ const PlusIcon = (props) => (
 )
 
 // --- Componente Chat Principal ---
-export default function Chat({ documentId }) {
+export default function Chat() {
   const [question, setQuestion] = useState('')
-  const [messages, setMessages] = useState([
-    // Simulação de mensagens para preencher a tela
-    { role: 'bot', text: '✅ Enviando "nutri.pdf"...', status: 'success' },
-    { role: 'bot', text: '❌ Erro ao enviar o arquivo.', status: 'error' },
-    { role: 'user', text: 'tudo bem, ta começando a melhorar' },
-    { role: 'bot', text: '❌ Erro ao consultar o backend.', status: 'error' },
-    { role: 'user', text: 'alguma coisa' },
-    { role: 'bot', text: '❌ Erro ao consultar o backend: Failed to fetch', status: 'error' },
-  ])
+  const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [documentId, setDocumentId] = useState(null)
   const chatWindowRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const textAreaRef = useRef(null)
+
+  // Função para ajustar altura do textarea
+  const adjustTextAreaHeight = () => {
+    const textarea = textAreaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px'
+    }
+  }
+
+  // Ajusta altura quando o conteúdo muda
+  useEffect(() => {
+    adjustTextAreaHeight()
+  }, [question])
 
   // Scrolla para o final
   useEffect(() => {
@@ -52,17 +59,31 @@ export default function Chat({ documentId }) {
     }
   }, [messages])
   
-  // Mock function para simular a resposta da IA
-  async function simulateChatResponse(q) {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            const botMsg = { 
-                role: 'bot', 
-                text: `Com base na sua pergunta, eu recomendaria...`, 
-            }
-            resolve(botMsg)
-        }, 1500) 
-    })
+  async function handleFileUpload(file) {
+    if (!file) return
+    setLoading(true)
+    setMessages(prev => [...prev, { 
+      role: 'user', 
+      text: `📄 Enviando "${file.name}"...` 
+    }])
+
+    try {
+      const { documentId } = await uploadDocument(file)
+      setDocumentId(documentId)
+      setMessages(prev => [...prev, {
+        role: 'bot',
+        text: `✅ Documento "${file.name}" carregado com sucesso!`
+      }])
+    } catch (err) {
+      console.error('Erro no upload:', err)
+      setMessages(prev => [...prev, {
+        role: 'bot',
+        text: `❌ Erro ao enviar arquivo: ${err.message}`,
+        status: 'error'
+      }])
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function sendQuestion(e) {
@@ -78,11 +99,20 @@ export default function Chat({ documentId }) {
     setLoading(true)
 
     try {
-        const botMsg = await simulateChatResponse(userQuestion)
-        setMessages(prev => [...prev, botMsg])
+      const { answer, sources } = await sendChatQuestion(documentId, userQuestion)
+      const botMsg = {
+        role: 'bot',
+        text: answer,
+        sources
+      }
+      setMessages(prev => [...prev, botMsg])
     } catch (err) {
-      console.error(err)
-      setMessages(prev => [...prev, { role: 'bot', text: 'Erro ao consultar o assistente.', status: 'error' }])
+      console.error('Erro no chat:', err)
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: `Erro ao consultar o assistente: ${err.message}`, 
+        status: 'error' 
+      }])
     } finally {
       setLoading(false)
     }
@@ -171,34 +201,80 @@ export default function Chat({ documentId }) {
         )}
       </div>
 
-      {/* INPUT DO CHAT (Cores e layout do mockup) */}
-      <form onSubmit={sendQuestion} className="p-4 bg-white border-t border-gray-100 flex items-center gap-2 shadow-inner flex-shrink-0">
-        
-        {/* Botão + (Adicionar) */}
-        <button
-          type="button"
-          className="w-12 h-12 flex items-center justify-center rounded-full text-white transition duration-150 shadow-md bg-blue-600 hover:bg-blue-700"
-        >
-          <PlusIcon className="w-6 h-6"/>
-        </button>
-        
-        {/* Input */}
-        <input
-          type="text"
-          value={question}
-          onChange={e => setQuestion(e.target.value)}
-          placeholder="Digite sua pergunta..."
-          disabled={loading}
-          className="flex-grow p-3 border border-gray-200 rounded-full focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition duration-150 disabled:bg-gray-50 disabled:text-gray-400"
-        />
-        
-        {/* Botão "Escolher arquivo..." (Simulação de um segundo botão à direita, como na imagem) */}
-        <button 
-          type="button" 
-          className="px-4 h-12 font-medium text-sm text-gray-500 bg-gray-100 rounded-full border border-gray-300 hover:bg-gray-200 transition duration-150"
-        >
-          Escolher arquivo nutri
-        </button>
+      {/* INPUT DO CHAT (Estilo WhatsApp) */}
+      <form 
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (question.trim()) sendQuestion()
+        }} 
+        className="p-3 bg-white border-t border-gray-100 shadow-inner flex-shrink-0"
+      >
+        <div className="max-w-4xl mx-auto flex items-end gap-2">
+          {/* Área de upload com nome do arquivo */}
+          <div className="relative min-w-[40px] h-[40px]">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload(file)
+              }}
+              ref={fileInputRef}
+              disabled={loading}
+            />
+            <button
+              type="button"
+              className={`absolute inset-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                loading 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+              }`}
+              disabled={loading}
+            >
+              <PlusIcon className="w-5 h-5"/>
+            </button>
+            {/* Nome do arquivo selecionado */}
+            <div className="absolute left-12 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">
+              {fileInputRef.current?.files?.[0]?.name || "Nenhum arquivo selecionado"}
+            </div>
+          </div>
+          
+          {/* Área de texto */}
+          <div className="flex-grow relative bg-white rounded-2xl border border-gray-200 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-all">
+            <textarea
+              ref={textAreaRef}
+              value={question}
+              onChange={e => setQuestion(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  if (question.trim()) sendQuestion()
+                }
+              }}
+              placeholder="Digite sua pergunta... (Shift + Enter para nova linha)"
+              disabled={loading}
+              rows={1}
+              className="block w-full px-4 py-3 max-h-32 text-gray-700 placeholder-gray-400 bg-transparent border-none rounded-2xl resize-none focus:ring-0 overflow-y-auto"
+              style={{
+                minHeight: '48px',
+              }}
+            />
+          </div>
+          
+          {/* Botão de Envio */}
+          <button 
+            type="submit" 
+            disabled={loading || !question.trim()}
+            className={`mb-1 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              loading || !question.trim() 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+            }`}
+          >
+            <SendIcon className="w-5 h-5"/>
+          </button>
+        </div>
       </form>
     </div>
   )

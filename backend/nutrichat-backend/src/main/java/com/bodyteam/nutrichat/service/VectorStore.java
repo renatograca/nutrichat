@@ -1,5 +1,6 @@
 package com.bodyteam.nutrichat.service;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,10 @@ public class VectorStore {
 
   private final Map<String, Map<String, float[]>> store = new HashMap<>();
   private final Map<String, Map<String, String>> texts = new HashMap<>();
+
+  public Map<String, String> getDocumentById(String documentId) {
+    return texts.getOrDefault(documentId, Collections.emptyMap());
+  }
 
   public void upsert(String documentId, String chunkId, float[] vector, String text) {
     store.computeIfAbsent(documentId, k -> new HashMap<>()).put(chunkId, vector);

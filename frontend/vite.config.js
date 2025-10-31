@@ -2,9 +2,14 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import tailwindcss from '@tailwindcss/vite'
+import Terminal from 'vite-plugin-terminal'
 
 export default defineConfig({
   plugins: [
+    Terminal({
+      console: 'terminal',
+      output: ['error', 'warn', 'info', 'log']
+    }),
     tailwindcss(),
     react(),
     VitePWA({
