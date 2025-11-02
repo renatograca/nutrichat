@@ -1,4 +1,4 @@
-package com.bodyteam.nutrichat.configs;
+package com.bodyteam.nutrichat.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
