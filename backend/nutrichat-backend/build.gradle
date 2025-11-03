@@ -32,17 +32,19 @@ dependencies {
   runtimeOnly 'org.springframework.boot:spring-boot-docker-compose'
 
   implementation "org.springframework.ai:spring-ai-pdf-document-reader:${springAiVersion}"
-  implementation "org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter:${springAiVersion}"
 
-  // implementation "org.springframework.ai:spring-ai-ollama-spring-boot-starter:${springAiVersion}"
+   implementation "org.springframework.ai:spring-ai-ollama-spring-boot-starter:${springAiVersion}"
   // implementation "org.springframework.ai:spring-ai-google-gemini-api-spring-boot-starter:${springAiVersion}"
   // implementation "org.springframework.ai:spring-ai-openai-spring-boot-starter:${springAiVersion}"
 
-  implementation 'org.springframework.ai:spring-ai-core'
-  implementation 'org.springframework.ai:spring-ai-google-gemini-api-spring-boot-starter'
-
-  implementation 'org.springframework.ai:spring-ai-pgvector-store'
   implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+  implementation "org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter:1.0.0-M1"
+  // implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector:1.0.0-M1'
+  implementation 'org.springframework.ai:spring-ai-pgvector-store:1.0.0-M1'
+
+  implementation 'org.springframework.ai:spring-ai-starter-model-google-genai:1.1.0-M4'
+
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

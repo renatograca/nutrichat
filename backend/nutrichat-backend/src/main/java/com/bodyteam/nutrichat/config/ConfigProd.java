@@ -1,8 +1,11 @@
 package com.bodyteam.nutrichat.config;
 
+import com.google.genai.Client;
 import javax.sql.DataSource;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.google.genai.GoogleGenAiChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaOptions;
@@ -21,15 +24,11 @@ public class ConfigProd {
   public JdbcTemplate jdbcTemplate(DataSource dataSource) {
     return new JdbcTemplate(dataSource);
   }
-  
-  @Bean
-  public ChatClient chatClient(ChatClient.Builder builder) {
-    return builder.build();
-  }
 
   @Bean
   public EmbeddingModel embeddingModel(OllamaApi ollamaApi) {
-    return new OllamaEmbeddingModel(ollamaApi, OllamaOptions.create().withModel("nomic-embed-text"));
+    return new OllamaEmbeddingModel(
+        ollamaApi, OllamaOptions.create().withModel("nomic-embed-text"));
   }
 
   // === VECTOR STORE ===

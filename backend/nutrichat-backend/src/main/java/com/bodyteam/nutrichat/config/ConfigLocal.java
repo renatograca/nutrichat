@@ -1,7 +1,7 @@
 package com.bodyteam.nutrichat.config;
 
 import javax.sql.DataSource;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
@@ -23,16 +23,16 @@ public class ConfigLocal {
   }
 
   // 1. Criação do Bean Concreto de ChatClient (resolve o erro)
-  @Bean
-  public ChatClient chatClient(OllamaChatModel model) {
-    return ChatClient.builder(model).build();
-  }
+//  @Bean
+//  public ChatModel ChatModel(OllamaChatModel builder) {
+//    return builder;
+//  }
 
   // 2. Criação do Bean Concreto de EmbeddingModel (garante a injeção PgVector)
   @Bean
   public EmbeddingModel embeddingModel(OllamaApi ollamaApi) {
-    // Usa o OllamaEmbeddingModel concreto.
-    return new OllamaEmbeddingModel(ollamaApi, OllamaOptions.create().withModel("phi"));
+    return new OllamaEmbeddingModel(
+        ollamaApi,OllamaOptions.create().withModel("nomic-embed-text"));
   }
 
   // === VECTOR STORE ===

@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ChatController {
 
-  private final ChatClient chatClient;
+  private final ChatModel chatModel;
   private final VectorStore vectorStore;
   private final DocumentService documentService;
 
@@ -66,7 +66,7 @@ public class ChatController {
 
     Prompt prompt = new Prompt(List.of(systemPrompt.createMessage(Map.of("context", context)), userMessage));
 
-    String response = chatClient.prompt(prompt).call().content();
+    String response = chatModel.call(prompt).toString();
 
     final var result = System.currentTimeMillis() - start;
     log.info("finalizou em {}", result);
