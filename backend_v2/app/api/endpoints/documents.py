@@ -4,6 +4,7 @@ from app.models.document import DocumentIngestResponse
 
 router = APIRouter()
 
+
 @router.post("/ingest", response_model=DocumentIngestResponse)
 async def ingest_document(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
