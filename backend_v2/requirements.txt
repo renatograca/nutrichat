@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+pgvector
+langchain
+llama-index
+pydantic
+PyPDF2
+python-dotenv
