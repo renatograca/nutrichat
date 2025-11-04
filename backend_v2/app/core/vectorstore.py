@@ -38,11 +38,14 @@ class VectorStore:
         vector_str = "[" + ",".join(map(str, np.array(query_embedding).tolist())) + "]"
 
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT content, metadata
                 FROM vector_store
                 ORDER BY embedding <-> %s::vector
                 LIMIT %s
-            """, (vector_str, top_k))
+            """,
+                (vector_str, top_k),
+            )
             results = cur.fetchall()
         return results

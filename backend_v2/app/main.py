@@ -14,7 +14,6 @@ logging.basicConfig(
 app = FastAPI(title="NutriChat API")
 
 
-
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
 
@@ -30,9 +29,11 @@ async def log_requests(request, call_next):
     logger.info(f"📤 {response.status_code} {request.url}")
     return response
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)
