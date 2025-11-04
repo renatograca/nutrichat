@@ -1,6 +1,7 @@
 import psycopg2
 from app.config import DATABASE_URL
 from psycopg2.extras import Json
+import numpy as np
 
 
 class VectorStore:
@@ -34,13 +35,14 @@ class VectorStore:
             self.conn.commit()
 
     def similarity_search(self, query_embedding: list, top_k: int = 5):
+        vector_str = "[" + ",".join(map(str, np.array(query_embedding).tolist())) + "]"
+
         with self.conn.cursor() as cur:
-            cur.execute(
-                """
-            SELECT content, metadata FROM vector_store
-            ORDER BY embedding <-> %s
-            LIMIT %s
-            """,
-                (query_embedding, top_k),
-            )
-            return cur.fetchall()
+            cur.execute("""
+                SELECT content, metadata
+                FROM vector_store
+                ORDER BY embedding <-> %s::vector
+                LIMIT %s
+            """, (vector_str, top_k))
+            results = cur.fetchall()
+        return results

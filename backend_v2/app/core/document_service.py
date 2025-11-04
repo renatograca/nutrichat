@@ -1,9 +1,11 @@
 from app.utils.pdf_utils import extract_text_from_pdf
 from app.core.vectorstore import VectorStore
-from app.core.providers.embedding_provider import EmbeddingProvider
 from datetime import datetime
 import tiktoken
 import os
+from app.core.providers.provider_factory import get_embedding_provider
+
+ai_provider = get_embedding_provider()
 
 
 def chunk_text(text: str, max_tokens: int = 500):
@@ -35,13 +37,12 @@ def ingest_pdf(file_bytes: bytes, filename: str):
     chunks = chunk_text(text)
 
     # 2️⃣ Define provedor via variável de ambiente
-    provider_name = os.getenv("EMBEDDING_PROVIDER", "openai")
-    embedding_provider = EmbeddingProvider(provider_name)
+    provider_name = os.getenv("EMBEDDING_PROVIDER", "google")
     vector_store = VectorStore()
 
     # 3️⃣ Gera embeddings e salva
     for i, chunk in enumerate(chunks, start=1):
-        embedding = embedding_provider.embed_text(chunk)
+        embedding = ai_provider.embed_text(chunk)
         metadata = {
             "file_name": filename,
             "chunk_index": i,
