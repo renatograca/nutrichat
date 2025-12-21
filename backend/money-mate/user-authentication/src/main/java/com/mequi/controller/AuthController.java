@@ -54,10 +54,7 @@ public class AuthController implements Controller {
 
     try {
       String userId = authService.validateToken(token);
-      context.status(HttpStatus.OK).json(AuthResponse.builder()
-          .message("Token is valid")
-          .userId(Long.parseLong(userId))
-          .build());
+      sendSuccessResponse(context, token, Long.parseLong(userId));
     } catch (Exception e) {
       context.status(HttpStatus.UNAUTHORIZED).json(AuthResponse.builder().message("Token is invalid").build());
     }
