@@ -43,13 +43,16 @@
 from app.core.vectorstore import VectorStore
 from app.core.providers.provider_factory import get_ai_provider
 from app.core.providers.provider_factory import get_embedding_provider
+from app.core.chat_repository import ChatRepository
+from typing import List
 
 vector_store = VectorStore()
 ai_provider = get_ai_provider()
 embegging_provider = get_embedding_provider()
+chat_repo = ChatRepository()
 
 
-def ask_question(question: str, user_id: str, top_k: int = 5):
+def ask_question(question: str, user_id: str, chat_id: str = None, top_k: int = 5):
     # 1. Obter embedding da pergunta
     query_embedding = embegging_provider.embed_text(question)
 
@@ -57,6 +60,30 @@ def ask_question(question: str, user_id: str, top_k: int = 5):
     docs = vector_store.similarity_search(query_embedding, user_id, top_k=top_k)
     context = "\n".join([d[0] for d in docs])
 
-    # 3. Fazer pergunta ao modelo
-    response = ai_provider.ask_question(question, context)
+    # 3. Obter histórico recente se chat_id for fornecido
+    history_str = ""
+    if chat_id:
+        messages = chat_repo.get_chat_messages(chat_id, limit=10)
+        # Format history: "Role: Content"
+        history_str = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+
+    # 4. Construir prompt com histórico e contexto
+    full_prompt = f"""
+Você é um assistente de nutrição amigável e informativo.
+Responda exclusivamente com base no contexto do documento fornecido abaixo.
+Se a resposta não existir no plano nutricional, informe que não possui essa informação.
+
+Histórico da conversa:
+{history_str}
+
+Contexto do Documento:
+{context}
+
+Pergunta:
+{question}
+"""
+
+    # 5. Fazer pergunta ao modelo
+    response = ai_provider.chat(full_prompt)
+    
     return response
