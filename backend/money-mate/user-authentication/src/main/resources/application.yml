@@ -1,0 +1,7 @@
+database:
+  url: jdbc:postgresql://localhost:5432/money_mate
+  user: postgres
+  pass: postgres
+
+server:
+  port: 8081

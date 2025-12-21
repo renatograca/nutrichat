@@ -1,0 +1,56 @@
+name: Backport PR to Develop
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  backport:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Garante que todo o histórico esteja disponível
+
+      - name: Set up Git configuration
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get PR title and format branch name
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          SAFE_BRANCH_NAME=$(echo "$PR_TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-')
+          echo "BACKPORT_BRANCH=backport/$SAFE_BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Fetch develop branch
+        run: |
+          git fetch origin develop:develop
+
+      - name: Create backport branch
+        run: |
+          git checkout -b $BACKPORT_BRANCH develop
+          git merge --no-ff main -m "🔄 Backport: Merge main into develop"
+
+      - name: Push backport branch
+        run: |
+          git push origin $BACKPORT_BRANCH --force
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "🔄 Backport: Merge '${{ github.event.pull_request.title }}' into develop"
+          body: |
+            📢 *Este é um PR automatizado para backport da main para develop.*
+            - ✅ Criado automaticamente pelo GitHub Actions.
+            - 🚀 Por favor, revise as mudanças e faça o merge quando apropriado.
+          head: ${{ env.BACKPORT_BRANCH }}
+          base: develop
+          labels: "backport,automated"
