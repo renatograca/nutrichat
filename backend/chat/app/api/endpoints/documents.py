@@ -9,10 +9,11 @@ router = APIRouter()
 @router.post("", response_model=DocumentIngestResponse)
 async def ingest_document(
     file: UploadFile = File(...),
-    user_id: str = Form(...)
+    user_id: str = Form(...),
+    chat_id: Optional[str] = Form(None)
 ):
     if not file.filename.lower().endswith(".pdf"):
         return {"message": "Por favor, envie um PDF válido.", "chunks_count": 0, "user_id": user_id}
     content = await file.read()
-    result = ingest_pdf(content, file.filename, user_id)
+    result = ingest_pdf(content, file.filename, user_id, chat_id)
     return result

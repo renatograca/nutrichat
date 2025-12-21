@@ -4,8 +4,8 @@ from datetime import datetime
 from uuid import UUID
 
 class ChatCreate(BaseModel):
-    documentId: str = Field(..., alias="documentId")
-    user_id: str # Normalmente viria do token de auth, mas seguindo o padrão anterior
+    user_id: str
+    title: Optional[str] = None
 
 class ChatMessageCreate(BaseModel):
     message: str
@@ -20,8 +20,8 @@ class ChatMessageResponse(BaseModel):
 class ChatResponse(BaseModel):
     id: UUID
     user_id: str
-    document_id: str
-    title: str
+    document_id: Optional[str] = None
+    title: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

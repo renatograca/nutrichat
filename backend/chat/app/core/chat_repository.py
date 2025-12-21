@@ -17,8 +17,8 @@ class ChatRepository:
                 CREATE TABLE IF NOT EXISTS chat (
                     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                     user_id TEXT NOT NULL,
-                    document_id TEXT NOT NULL,
-                    title TEXT NOT NULL,
+                    document_id TEXT,
+                    title TEXT,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
@@ -35,15 +35,31 @@ class ChatRepository:
             """)
             self.conn.commit()
 
-    def create_chat(self, user_id: str, document_id: str, title: str) -> str:
+    def create_chat(self, user_id: str, title: str = None, document_id: str = None) -> str:
         with self.conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO chat (user_id, document_id, title) VALUES (%s, %s, %s) RETURNING id",
-                (user_id, document_id, title)
+                "INSERT INTO chat (user_id, title, document_id) VALUES (%s, %s, %s) RETURNING id",
+                (user_id, title, document_id)
             )
             chat_id = cur.fetchone()[0]
             self.conn.commit()
             return str(chat_id)
+
+    def update_chat_document(self, chat_id: str, document_id: str):
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "UPDATE chat SET document_id = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                (document_id, chat_id)
+            )
+            self.conn.commit()
+
+    def update_chat_title(self, chat_id: str, title: str):
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "UPDATE chat SET title = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                (title, chat_id)
+            )
+            self.conn.commit()
 
     def get_user_chats(self, user_id: str) -> List[dict]:
         with self.conn.cursor() as cur:

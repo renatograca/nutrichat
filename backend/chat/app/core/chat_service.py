@@ -56,8 +56,8 @@ def ask_question(question: str, user_id: str, chat_id: str = None, top_k: int = 
     # 1. Obter embedding da pergunta
     query_embedding = embegging_provider.embed_text(question)
 
-    # 2. Buscar contexto no vector store filtrando por user_id
-    docs = vector_store.similarity_search(query_embedding, user_id, top_k=top_k)
+    # 2. Buscar contexto no vector store filtrando por user_id e chat_id
+    docs = vector_store.similarity_search(query_embedding, user_id, chat_id=chat_id, top_k=top_k)
     context = "\n".join([d[0] for d in docs])
 
     # 3. Obter histórico recente se chat_id for fornecido

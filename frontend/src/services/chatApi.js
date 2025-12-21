@@ -1,4 +1,4 @@
-import { CHAT_BASE_URL, getToken } from './config'
+import {CHAT_BASE_URL, getToken, getUserId} from './config'
 
 const getHeaders = () => {
   const token = getToken()
@@ -9,7 +9,8 @@ const getHeaders = () => {
 }
 
 export async function getChats() {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats`, {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats?user_id=${userId}`, {
     headers: getHeaders()
   })
   if (!res.ok) throw new Error('Failed to fetch chats')
@@ -20,9 +21,29 @@ export async function createChat(documentId = null) {
   const res = await fetch(`${CHAT_BASE_URL}/api/chats`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ document_id: documentId })
+    body: JSON.stringify({ user_id: getUserId(), document_id: documentId })
   })
   if (!res.ok) throw new Error('Failed to create chat')
+  return await res.json()
+}
+
+export async function associateDocument(chatId, documentId) {
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/document`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ user_id: getUserId(), documentId })
+  })
+  if (!res.ok) throw new Error('Failed to associate document')
+  return await res.json()
+}
+
+export async function updateChatTitle(chatId, title) {
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ user_id: getUserId(), title })
+  })
+  if (!res.ok) throw new Error('Failed to update chat title')
   return await res.json()
 }
 
