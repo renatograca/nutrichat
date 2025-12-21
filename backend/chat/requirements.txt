@@ -1,0 +1,45 @@
+# --- Core Framework ---
+fastapi==0.115.0
+uvicorn==0.30.1
+python-multipart==0.0.6          # Para upload de arquivos via FastAPI
+
+# --- Banco de dados e Vetores ---
+psycopg2-binary==2.9.9         # Driver PostgreSQL
+pgvector==0.2.4                # Integração com vetores no PostgreSQL
+SQLAlchemy==2.0.23             # ORM opcional (para futuras expansões)
+
+# --- IA e Modelos ---
+openai==1.43.0                 # Cliente oficial OpenAI (suporta API genérica)
+langchain==0.2.15              # Ferramentas para RAG, embeddings, etc.
+langchain-openai==0.1.7        # Integração entre LangChain e OpenAI
+tiktoken==0.7.0                # Tokenizer compatível com OpenAI e Ollama
+chromadb==0.5.5                # Alternativa de vetorstore local (opcional)
+sentence-transformers==3.0.1   # Geração de embeddings locais (caso Ollama)
+google-generativeai==0.7.2     # Cliente oficial Google Generative AI
+
+
+# --- Processamento de Documentos ---
+pypdf==4.2.0                   # Leitura de PDFs
+python-docx==1.1.2             # (opcional) Leitura de DOCX
+unstructured==0.14.9           # Extração de texto estruturado de PDFs e docs
+PyPDF2==3.0.1                  # Alternativa para manipulação de PDFs
+# --- Utilidades ---
+pandas==2.2.3
+numpy==1.26.4
+requests==2.32.3
+python-dotenv==1.0.1           # Para gerenciar variáveis de ambiente
+loguru==0.7.2                  # Logs estruturados e bonitos
+
+# --- Testes e Dev ---
+pytest==8.3.2
+httpx==0.27.0                  # Cliente HTTP usado pelo FastAPI TestClient
+
+
+# --- AWS ----
+boto3==1.28.39                 # Cliente AWS para S3 ou outros serviços
+
+# --- Documentação ---
+mkdocs
+mkdocstrings
+mkdocs-material
+gunicorn==21.2.0

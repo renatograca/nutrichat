@@ -1,0 +1,46 @@
+:root{
+  --green-500:#2f855a;
+  --green-300:#68d391;
+  --bg:#ffffff;
+  --muted:#718096;
+}
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
+  background:var(--bg);
+  color:#1a202c;
+  -webkit-font-smoothing:antialiased;
+}
+.app-root{max-width:720px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh}
+.app-header{padding:18px;background:linear-gradient(90deg,var(--green-300),var(--green-500));color:white}
+.app-header h1{margin:0;font-size:1.2rem}
+.subtitle{margin:4px 0 0;font-size:0.85rem;opacity:0.95}
+.app-main{flex:1;padding:12px;display:flex;flex-direction:column;gap:12px}
+.app-footer{text-align:center;padding:10px;font-size:0.8rem;color:var(--muted)}
+
+.upload{display:flex;flex-direction:column;gap:8px}
+.upload form{display:flex;gap:8px}
+.upload input[type=file]{flex:1}
+.upload button{background:var(--green-500);color:white;border:none;padding:10px 12px;border-radius:6px}
+.upload-status{font-size:0.9rem;color:var(--muted)}
+
+.chat{display:flex;flex-direction:column;gap:8px}
+.messages{min-height:200px;max-height:60vh;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+.message{display:flex}
+.message.user{justify-content:flex-end}
+.message.assistant{justify-content:flex-start}
+.bubble{max-width:80%;padding:8px 12px;background:#edfdf2;border-radius:14px}
+.message.user .bubble{background:var(--green-500);color:#fff}
+.composer{display:flex;gap:8px;padding:8px;border-top:1px solid #eee}
+.composer input{flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:8px}
+.composer button{background:var(--green-500);color:white;border:none;padding:10px 12px;border-radius:8px}
+
+.empty{color:var(--muted);padding:12px;text-align:center}
+
+@media (max-width:480px){
+  .app-root{padding:0}
+  .app-header{padding:14px}
+  .bubble{max-width:92%}
+}
