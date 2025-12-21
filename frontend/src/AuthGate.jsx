@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import Login from './components/Login'
 import Register from './components/Register'
+import OfflineScreen from './components/OfflineScreen'
 import { logout, validateToken } from './services/auth'
 
 function hasToken() {
@@ -11,19 +12,31 @@ function hasToken() {
 export default function AuthGate({ children }) {
   const [authed, setAuthed] = useState(hasToken())
   const [loading, setLoading] = useState(true)
+  const [isOffline, setIsOffline] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
-  useEffect(() => {
-    async function checkAuth() {
-      if (hasToken()) {
+  async function checkAuth() {
+    setLoading(true)
+    setIsOffline(false)
+    if (hasToken()) {
+      try {
         const isValid = await validateToken()
         setAuthed(!!isValid)
-      } else {
-        setAuthed(false)
+      } catch (err) {
+        if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+          setIsOffline(true)
+        } else {
+          setAuthed(false)
+        }
       }
-      setLoading(false)
+    } else {
+      setAuthed(false)
     }
+    setLoading(false)
+  }
+
+  useEffect(() => {
     checkAuth()
   }, [])
 
@@ -42,6 +55,10 @@ export default function AuthGate({ children }) {
     logout()
     setAuthed(false)
     navigate('/login')
+  }
+
+  if (isOffline) {
+    return <OfflineScreen onRetry={checkAuth} />
   }
 
   if (loading) {

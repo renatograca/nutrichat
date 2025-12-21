@@ -58,7 +58,11 @@ export default function Register() {
         navigate('/login')
       }, 2000)
     } catch (err) {
-      setError('Falha no cadastro. Verifique os dados.')
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
+      } else {
+        setError('Falha no cadastro. Verifique os dados.')
+      }
     } finally {
       setLoading(false)
     }

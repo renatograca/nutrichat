@@ -16,7 +16,11 @@ export default function Login({ onLoginSuccess }) {
       await login({ email, password })
       onLoginSuccess()
     } catch (err) {
-      setError('Falha no login. Verifique credenciais.')
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
+      } else {
+        setError('Falha no login. Verifique credenciais.')
+      }
     } finally {
       setLoading(false)
     }

@@ -7,20 +7,27 @@ export async function fetchUserByEmail(email) {
 }
 
 export async function register(userData) {
-  console.log('USER_BASE_URL:', USER_BASE_URL)
-  const res = await fetch(`${USER_BASE_URL}/users/`, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      full_name: userData.fullName,
-      email: userData.email,
-      password: userData.password,
-      date_of_birth: userData.dateOfBirth,
-      phone: userData.phone
+  try {
+    console.log('USER_BASE_URL:', USER_BASE_URL)
+    const res = await fetch(`${USER_BASE_URL}/users/`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        full_name: userData.fullName,
+        email: userData.email,
+        password: userData.password,
+        date_of_birth: userData.dateOfBirth,
+        phone: userData.phone
+      })
     })
-  })
-  if (!res.ok) throw new Error('registration failed')
-  return await res.json()
+    if (!res.ok) throw new Error('registration failed')
+    return await res.json()
+  } catch (err) {
+    if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      throw err
+    }
+    throw err
+  }
 }
