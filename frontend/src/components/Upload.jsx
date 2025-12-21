@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { uploadFile } from '../services/api'
+import { uploadFile } from '../services/chat'
 
 export default function Upload() {
   const [file, setFile] = useState(null)

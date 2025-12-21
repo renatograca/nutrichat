@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { login } from '../services/api'
+import { Link } from 'react-router-dom'
+import { login } from '../services/auth'
 
 export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('')
@@ -59,6 +60,13 @@ export default function Login({ onLoginSuccess }) {
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
+            
+            <div className="text-center">
+              <Link to="/register" className="btn btn-link">
+                Não tem uma conta? Cadastre-se
+              </Link>
+            </div>
+
             {error && <div className="alert alert-danger" role="alert">{error}</div>}
             <p className="text-center text-muted small mt-4">
               Credenciais demo: renato@email.com / senha

@@ -1,5 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App'
 import AuthGate from './AuthGate'
@@ -8,9 +9,11 @@ import { register as registerServiceWorker } from './registerServiceWorker'
 
 const root = createRoot(document.getElementById('root'))
 root.render(
-	<AuthGate>
-		<App />
-	</AuthGate>
+  <BrowserRouter>
+    <AuthGate>
+      <App />
+    </AuthGate>
+  </BrowserRouter>
 )
 
 // registrar service worker apenas em produção
