@@ -1,61 +1,46 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
-import tailwindcss from '@tailwindcss/vite'
-import Terminal from 'vite-plugin-terminal'
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    Terminal({
-      console: 'terminal',
-      output: ['error', 'warn', 'info', 'log']
-    }),
-    tailwindcss(),
     react(),
     VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'robots.txt', 'icons/*'],
       manifest: {
-        name: "NutriChat - Seu Assistente de Plano Alimentar",
-        short_name: "NutriChat",
-        description: "Assistente inteligente para planejamento alimentar",
-        theme_color: "#4CAF50",
-        background_color: "#ffffff",
-        display: "standalone",
-        scope: "/",
-        start_url: "/",
+        short_name: 'NutriChat',
+        name: 'NutriChat WebView',
+        start_url: '.',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#2f855a',
         icons: [
-          {
-            src: "logo192.png",
-            sizes: "192x192",
-            type: "image/png"
-          },
-          {
-            src: "logo512.png",
-            sizes: "512x512",
-            type: "image/png"
-          }
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.*/i,
+            urlPattern: /\/api\/.*$/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
-              },
-              networkTimeoutSeconds: 10
+              expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 }
             }
+          },
+          {
+            urlPattern: /\/(.*)assets\/(.*)\.(?:js|css)$/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'static-assets' }
           }
         ]
-      },
-      devOptions: {
-        enabled: true,
-        type: 'module'
-      },
+      }
     })
-  ]
-});
+  ],
+  server: {
+    port: 5173
+  }
+})

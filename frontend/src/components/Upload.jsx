@@ -1,47 +1,31 @@
-import React, {useState} from 'react'
-import { BASE_URL } from '../config'
+import React, { useState } from 'react'
+import { uploadFile } from '../services/api'
 
-export default function Upload({ onReady }){
+export default function Upload() {
   const [file, setFile] = useState(null)
-  const [status, setStatus] = useState('Nenhum arquivo selecionado')
-  const [docId, setDocId] = useState(null)
+  const [status, setStatus] = useState('')
 
-  async function handleUpload(e){
+  async function handleUpload(e) {
     e.preventDefault()
-    if(!file) return alert('Escolha um arquivo primeiro.')
+    if (!file) return setStatus('Nenhum arquivo selecionado')
     setStatus('Enviando...')
-    const fd = new FormData()
-    fd.append('file', file)
     try {
-      const res = await fetch((BASE_URL || '') + '/api/documents/upload', {
-        method: 'POST',
-        body: fd
-      })
-      const data = await res.json()
-      setDocId(data.documentId)
-      setStatus('Indexando... (simulado)')
-      // In the mock backend indexing is immediate; in real app poll /status
-      setTimeout(() => {
-        setStatus('Pronto para consulta')
-        onReady && onReady(data.documentId)
-      }, 1200)
-    } catch (err){
-      console.error(err)
-      setStatus('Erro no upload')
+      await uploadFile(file)
+      setStatus('Arquivo enviado com sucesso. O assistente agora usa este documento.')
+    } catch (err) {
+      setStatus('Erro ao enviar arquivo.')
     }
   }
 
   return (
-    <div className="card">
-      <h2>Upload do Plano Nutricional</h2>
+    <section className="upload">
       <form onSubmit={handleUpload}>
-        <input type="file" accept=".pdf,.docx,.txt" onChange={e => setFile(e.target.files[0])} />
-        <button type="submit">Enviar</button>
+        <label className="file-label">
+          <input type="file" accept=".pdf,.docx,.txt" onChange={(e) => setFile(e.target.files?.[0])} />
+        </label>
+        <button type="submit">Enviar plano</button>
       </form>
-      <div className="status">
-        <strong>Status:</strong> {status}
-      </div>
-      {docId && <div className="docid">Document ID: <code>{docId}</code></div>}
-    </div>
+      {status && <div className="upload-status">{status}</div>}
+    </section>
   )
 }

@@ -1,0 +1,16 @@
+site_name: NutriChat Backend
+site_description: Documentação do backend NutriChat (FastAPI + RAG)
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Endpoints: endpoints.md
+  - Architecture: architecture.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands: []
+theme:
+  name: material
