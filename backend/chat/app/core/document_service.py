@@ -29,7 +29,7 @@ def chunk_text(text: str, max_tokens: int = 500):
     return chunks
 
 
-def ingest_pdf(file_bytes: bytes, filename: str):
+def ingest_pdf(file_bytes: bytes, filename: str, user_id: str):
     """Extrai texto de PDF, gera embeddings e salva no vetor store"""
 
     # 1️⃣ Lê o PDF e divide em chunks
@@ -47,10 +47,12 @@ def ingest_pdf(file_bytes: bytes, filename: str):
             "file_name": filename,
             "chunk_index": i,
             "timestamp": datetime.utcnow().isoformat(),
+            "user_id": user_id
         }
         vector_store.add(chunk, metadata, embedding)
 
     return {
         "message": f"Documento '{filename}' processado com sucesso usando {provider_name.title()}.",
         "chunks_count": len(chunks),
+        "user_id": user_id
     }

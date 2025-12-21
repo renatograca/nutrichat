@@ -34,7 +34,7 @@ class VectorStore:
             )
             self.conn.commit()
 
-    def similarity_search(self, query_embedding: list, top_k: int = 5):
+    def similarity_search(self, query_embedding: list, user_id: str, top_k: int = 5):
         vector_str = "[" + ",".join(map(str, np.array(query_embedding).tolist())) + "]"
 
         with self.conn.cursor() as cur:
@@ -42,10 +42,11 @@ class VectorStore:
                 """
                 SELECT content, metadata
                 FROM vector_store
+                WHERE metadata->>'user_id' = %s
                 ORDER BY embedding <-> %s::vector
                 LIMIT %s
             """,
-                (vector_str, top_k),
+                (user_id, vector_str, top_k),
             )
             results = cur.fetchall()
         return results
