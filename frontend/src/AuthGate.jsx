@@ -5,12 +5,16 @@ import Register from './components/Register'
 import OfflineScreen from './components/OfflineScreen'
 import { logout, validateToken } from './services/auth'
 
-function hasToken() {
-  try { return !!localStorage.getItem('auth_token') } catch { return false }
+function isAuthenticated() {
+  try { 
+    return !!localStorage.getItem('auth_token') && !!localStorage.getItem('user_id')
+  } catch { 
+    return false 
+  }
 }
 
 export default function AuthGate({ children }) {
-  const [authed, setAuthed] = useState(hasToken())
+  const [authed, setAuthed] = useState(isAuthenticated())
   const [loading, setLoading] = useState(true)
   const [isOffline, setIsOffline] = useState(false)
   const navigate = useNavigate()
@@ -19,10 +23,10 @@ export default function AuthGate({ children }) {
   async function checkAuth() {
     setLoading(true)
     setIsOffline(false)
-    if (hasToken()) {
+    if (isAuthenticated()) {
       try {
         const isValid = await validateToken()
-        setAuthed(!!isValid)
+        setAuthed(!!isValid && !!localStorage.getItem('user_id'))
       } catch (err) {
         if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
           setIsOffline(true)
@@ -42,7 +46,7 @@ export default function AuthGate({ children }) {
 
   useEffect(() => {
     if (!loading) {
-      setAuthed(hasToken())
+      setAuthed(isAuthenticated())
     }
   }, [location, loading])
 

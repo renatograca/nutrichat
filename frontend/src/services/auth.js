@@ -39,8 +39,12 @@ export async function validateToken() {
     const data = await res.json()
     if (data?.user_id) {
       try { localStorage.setItem('user_id', data.user_id) } catch {}
+      return data
+    } else {
+      // Se validou o token mas não retornou user_id, consideramos inválido para o app
+      logout()
+      return null
     }
-    return data
   } catch (err) {
     if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
       throw err

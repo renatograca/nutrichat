@@ -10,8 +10,7 @@ export async function sendMessage(text) {
     
     if (token) headers['Authorization'] = `Bearer ${token}`
     
-    const body = { text }
-    if (userId) body.user_id = userId
+    const body = { text, user_id: userId }
 
     const res = await fetch(`${CHAT_BASE_URL}/api/chat/`, {
       method: 'POST',
