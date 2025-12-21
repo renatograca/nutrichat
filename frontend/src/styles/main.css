@@ -69,7 +69,30 @@ body {
   max-width: 75%;
 }
 
-.chat-bubble-user {
-  max-width: 75%;
-  background-color: var(--chat-bubble-user);
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.transition-opacity {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease-in-out;
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.extra-small {
+  font-size: 0.75rem;
 }

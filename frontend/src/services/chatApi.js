@@ -17,6 +17,15 @@ export async function getChats() {
   return await res.json()
 }
 
+export async function getChat(chatId) {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`, {
+    headers: getHeaders()
+  })
+  if (!res.ok) throw new Error('Failed to fetch chat')
+  return await res.json()
+}
+
 export async function createChat(documentId = null) {
   const res = await fetch(`${CHAT_BASE_URL}/api/chats`, {
     method: 'POST',
@@ -74,10 +83,12 @@ export async function deleteChat(chatId) {
   return true
 }
 
-export async function uploadFile(file) {
+export async function uploadFile(file, chatId) {
   const fd = new FormData()
   fd.append('file', file)
-  
+  fd.append('user_id', getUserId())
+  if(chatId) fd.append('chat_id', chatId)
+
   const token = getToken()
   const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
 

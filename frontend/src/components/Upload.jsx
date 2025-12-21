@@ -12,7 +12,9 @@ export default function Upload() {
     setStatus('')
     setLoading(true)
     try {
-      await uploadFile(file)
+      // Como este componente não tem chatId, passamos null ou o backend pode precisar de ajuste
+      // Mas o objetivo principal era o UploadDocumentButton que já foi corrigido
+      await uploadFile(file, null)
       setStatus('Arquivo enviado com sucesso. O assistente agora usa este documento.')
       setFile(null)
     } catch (err) {
