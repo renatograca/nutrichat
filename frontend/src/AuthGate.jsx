@@ -55,12 +55,6 @@ export default function AuthGate({ children }) {
     navigate('/')
   }
 
-  function handleLogout() {
-    logout()
-    setAuthed(false)
-    navigate('/login')
-  }
-
   if (isOffline) {
     return <OfflineScreen onRetry={checkAuth} />
   }
@@ -91,19 +85,19 @@ export default function AuthGate({ children }) {
     )
   }
 
+  function handleLogout() {
+    logout()
+    setAuthed(false)
+    navigate('/login')
+  }
+
   return (
-    <div className="d-flex flex-column h-100">
-      <nav className="navbar navbar-light bg-white border-bottom fixed-top">
-        <div className="container-fluid">
-          <span className="navbar-brand mb-0 h1 text-primary fw-bold">NutriSmart</span>
-          <button className="btn btn-sm btn-outline-secondary" onClick={handleLogout}>Sair</button>
-        </div>
-      </nav>
-      <main className="flex-grow-1 overflow-hidden" style={{ paddingTop: '56px' }}>
+    <div className="d-flex flex-column h-100 bg-light">
+      <main className="flex-grow-1 overflow-hidden">
         <Routes>
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<Navigate to="/" replace />} />
-          <Route path="/" element={children} />
+          <Route path="/" element={React.cloneElement(children, { onLogout: handleLogout })} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
