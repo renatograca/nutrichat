@@ -23,11 +23,16 @@ export default function AuthGate({ children }) {
   }
 
   return (
-    <div className="authed-root">
-      <div className="topbar">
-        <button onClick={handleLogout}>Sair</button>
-      </div>
-      {children}
+    <div className="d-flex flex-column min-vh-100">
+      <nav className="navbar navbar-dark bg-primary shadow">
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1">NutriChat</span>
+          <button className="btn btn-outline-light" onClick={handleLogout}>Sair</button>
+        </div>
+      </nav>
+      <main className="flex-grow-1 py-4">
+        {children}
+      </main>
     </div>
   )
 }
