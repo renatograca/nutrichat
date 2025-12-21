@@ -26,7 +26,7 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
+instructions/
 # OS files
 .DS_Store
 Thumbs.db

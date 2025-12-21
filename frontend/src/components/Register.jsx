@@ -17,7 +17,26 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { id, value } = e.target
+    if (id === 'dateOfBirth') {
+      // Máscara simples para DD/MM/AAAA
+      let v = value.replace(/\D/g, '').slice(0, 8)
+      if (v.length >= 5) {
+        v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`
+      } else if (v.length >= 3) {
+        v = `${v.slice(0, 2)}/${v.slice(2)}`
+      }
+      setFormData(prev => ({ ...prev, [id]: v }))
+      return
+    }
     setFormData(prev => ({ ...prev, [id]: value }))
+  }
+
+  const handleDateFromCalendar = (e) => {
+    const dateValue = e.target.value // Formato AAAA-MM-DD
+    if (!dateValue) return
+    const [year, month, day] = dateValue.split('-')
+    const formattedDate = `${day}/${month}/${year}`
+    setFormData(prev => ({ ...prev, dateOfBirth: formattedDate }))
   }
 
   async function handleSubmit(e) {
@@ -25,16 +44,15 @@ export default function Register() {
     setError('')
     setLoading(true)
     
-    // Formatar data se necessário (o input date geralmente vem como YYYY-MM-DD)
-    // O backend espera dd/MM/yyyy
-    let formattedDate = formData.dateOfBirth
-    if (formData.dateOfBirth.includes('-')) {
-        const [year, month, day] = formData.dateOfBirth.split('-')
-        formattedDate = `${day}/${month}/${year}`
+    // Validar formato DD/MM/AAAA
+    if (formData.dateOfBirth.length < 10) {
+      setError('Data de nascimento inválida. Use DD/MM/AAAA.')
+      setLoading(false)
+      return
     }
 
     try {
-      await register({ ...formData, dateOfBirth: formattedDate })
+      await register(formData)
       setSuccess(true)
       setTimeout(() => {
         navigate('/login')
@@ -47,20 +65,29 @@ export default function Register() {
   }
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow" style={{ width: '100%', maxWidth: '450px' }}>
-        <div className="card-body p-5">
-          <h2 className="card-title text-center mb-4 text-primary">NutriChat</h2>
-          <p className="text-center text-muted mb-4">Crie sua conta</p>
+    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+      <div className="card shadow-sm p-4" style={{ maxWidth: '450px', width: '100%' }}>
+        <div className="card-body">
+          <div className="text-center mb-4">
+            <h3 className="text-primary fw-bold">NutriSmart</h3>
+            <p className="text-muted small">Crie sua conta</p>
+          </div>
           
           {success ? (
-            <div className="alert alert-success" role="alert">
-              Cadastro realizado com sucesso! Redirecionando para o login...
+            <div className="text-center p-2">
+              <div className="mb-3">
+                <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '3rem' }}></i>
+              </div>
+              <h4 className="text-success fw-bold">Cadastro Realizado!</h4>
+              <p className="text-muted small">Sua conta está pronta. Redirecionando...</p>
+              <Link to="/login" className="btn btn-primary w-100 mt-3 py-2">
+                Ir para Login
+              </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="fullName" className="form-label">Nome Completo</label>
+                <label htmlFor="fullName" className="form-label small">Nome Completo</label>
                 <input 
                   type="text" 
                   className="form-control"
@@ -72,7 +99,7 @@ export default function Register() {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="email" className="form-label">E-mail</label>
+                <label htmlFor="email" className="form-label small">E-mail</label>
                 <input 
                   type="email" 
                   className="form-control"
@@ -84,7 +111,7 @@ export default function Register() {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="password" className="form-label">Senha</label>
+                <label htmlFor="password" className="form-label small">Senha</label>
                 <input 
                   type="password" 
                   className="form-control"
@@ -95,43 +122,65 @@ export default function Register() {
                   required 
                 />
               </div>
-              <div className="mb-3">
-                <label htmlFor="dateOfBirth" className="form-label">Data de Nascimento</label>
-                <input 
-                  type="date" 
-                  className="form-control"
-                  id="dateOfBirth"
-                  value={formData.dateOfBirth} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="phone" className="form-label">Telefone</label>
-                <input 
-                  type="tel" 
-                  className="form-control"
-                  id="phone"
-                  value={formData.phone} 
-                  onChange={handleChange} 
-                  placeholder="Ex: 75982389131"
-                  required 
-                />
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="dateOfBirth" className="form-label small">Nascimento</label>
+                  <div className="input-group">
+                    <input 
+                      type="text" 
+                      className="form-control"
+                      id="dateOfBirth"
+                      value={formData.dateOfBirth} 
+                      onChange={handleChange} 
+                      placeholder="DD/MM/AAAA"
+                      required 
+                    />
+                    <div className="position-relative">
+                      <button 
+                        type="button"
+                        className="btn btn-outline-secondary border-start-0 h-100 px-3"
+                        onClick={() => document.getElementById('calendar-input').showPicker?.() || document.getElementById('calendar-input').click()}
+                        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                      >
+                        <i className="bi bi-calendar-event"></i>
+                      </button>
+                      <input 
+                        type="date"
+                        id="calendar-input"
+                        className="position-absolute invisible"
+                        style={{ top: 0, left: 0, width: '100%', height: '100%' }}
+                        onChange={handleDateFromCalendar}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="phone" className="form-label small">Telefone</label>
+                  <input 
+                    type="tel" 
+                    className="form-control"
+                    id="phone"
+                    value={formData.phone} 
+                    onChange={handleChange} 
+                    placeholder="Ex: 75982389131"
+                    required 
+                  />
+                </div>
               </div>
               
               <button 
                 type="submit" 
-                className="btn btn-primary btn-lg w-100 mb-3"
+                className="btn btn-primary w-100 py-2 mb-3"
                 disabled={loading}
               >
                 {loading ? 'Cadastrando...' : 'Cadastrar'}
               </button>
               
-              {error && <div className="alert alert-danger" role="alert">{error}</div>}
+              {error && <div className="alert alert-danger py-2 small" role="alert">{error}</div>}
               
-              <div className="text-center mt-3">
-                <Link to="/login" className="btn btn-link">
-                  Já tem uma conta? Faça login
+              <div className="text-center mt-2">
+                <Link to="/login" className="text-decoration-none text-secondary small">
+                  Já tem conta? Faça login
                 </Link>
               </div>
             </form>

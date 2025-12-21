@@ -1,19 +1,32 @@
-:root{
-  --green-500:#2f855a;
-  --green-300:#68d391;
-  --bg:#ffffff;
-  --muted:#718096;
+:root {
+  --bs-primary: #4dbd74; /* Verde Menta Saudável */
+  --bs-primary-dark: #3a9d5d; /* Versão mais escura para hover */
+  --bs-secondary: #f8f9fa; /* Cinza claro para fundos de bolhas de chat */
+  --bs-success: #28a745; /* Manter ou ajustar ligeiramente */
+  --bs-body-bg: #ffffff; /* Fundo branco limpo */
+  --bs-body-color: #2c3e50; /* Texto em cinza escuro/azul para contraste inteligente */
+  --chat-bubble-user: #dcf8c6; /* Verde claro para mensagens do usuário */
 }
 
-*{box-sizing:border-box}
-html,body,#root{height:100%}
+/* Override de botão primário */
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+.btn-primary:hover {
+  background-color: var(--bs-primary-dark);
+  border-color: var(--bs-primary-dark);
+}
 
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
-  background:var(--bg);
-  color:#1a202c;
-  -webkit-font-smoothing:antialiased;
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  -webkit-font-smoothing: antialiased;
 }
 
 .min-vh-100 {
@@ -24,16 +37,19 @@ body{
   border: none;
 }
 
-.card-body {
-  border-radius: 0.5rem;
+/* Estilos adicionais para o chat RAG */
+.chat-container {
+  margin-top: 56px;
+  margin-bottom: 70px;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
-@media (max-width:480px){
-  .container-lg {
-    padding: 0 12px;
-  }
-  
-  .display-5 {
-    font-size: 2rem !important;
-  }
+.chat-bubble-ia {
+  max-width: 75%;
+}
+
+.chat-bubble-user {
+  max-width: 75%;
+  background-color: var(--chat-bubble-user);
 }

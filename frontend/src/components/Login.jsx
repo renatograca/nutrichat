@@ -23,17 +23,19 @@ export default function Login({ onLoginSuccess }) {
   }
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow" style={{ width: '100%', maxWidth: '400px' }}>
-        <div className="card-body p-5">
-          <h2 className="card-title text-center mb-4 text-primary">NutriChat</h2>
-          <p className="text-center text-muted mb-4">Faça login para continuar</p>
+    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+      <div className="card shadow-sm p-4" style={{ maxWidth: '400px', width: '100%' }}>
+        <div className="card-body">
+          <div className="text-center mb-4">
+            <h3 className="text-primary fw-bold">NutriSmart</h3>
+            <p className="text-muted small">Faça login para continuar</p>
+          </div>
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label htmlFor="email" className="form-label">E-mail</label>
               <input 
                 type="email" 
-                className="form-control form-control-lg"
+                className="form-control"
                 id="email"
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
@@ -45,7 +47,7 @@ export default function Login({ onLoginSuccess }) {
               <label htmlFor="password" className="form-label">Senha</label>
               <input 
                 type="password" 
-                className="form-control form-control-lg"
+                className="form-control"
                 id="password"
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
@@ -55,22 +57,19 @@ export default function Login({ onLoginSuccess }) {
             </div>
             <button 
               type="submit" 
-              className="btn btn-primary btn-lg w-100 mb-3"
+              className="btn btn-primary w-100 py-2 mb-3"
               disabled={loading}
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
             
             <div className="text-center">
-              <Link to="/register" className="btn btn-link">
-                Não tem uma conta? Cadastre-se
+              <Link to="/register" className="text-decoration-none text-secondary small">
+                Não tem conta? Cadastre-se
               </Link>
             </div>
 
-            {error && <div className="alert alert-danger" role="alert">{error}</div>}
-            <p className="text-center text-muted small mt-4">
-              Credenciais demo: renato@email.com / senha
-            </p>
+            {error && <div className="alert alert-danger mt-3 py-2 small" role="alert">{error}</div>}
           </form>
         </div>
       </div>
