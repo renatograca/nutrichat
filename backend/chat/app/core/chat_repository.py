@@ -50,13 +50,13 @@ class ChatRepository:
             logger.error(f"Erro ao garantir tabelas: {e}")
             raise
 
-    def create_chat(self, user_id: str, title: str = None, document_id: str = None) -> str:
+    def create_chat(self, user_id: str, title: str = None) -> str:
         conn = self._get_connection()
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO chat (user_id, title, document_id) VALUES (%s, %s, %s) RETURNING id",
-                    (user_id, title, document_id)
+                    "INSERT INTO chat (user_id, title) VALUES (%s, %s) RETURNING id",
+                    (user_id, title)
                 )
                 chat_id = cur.fetchone()[0]
                 conn.commit()

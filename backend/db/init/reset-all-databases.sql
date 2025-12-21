@@ -37,7 +37,7 @@ CREATE TABLE vector_store (
     id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
     content text,
     metadata json,
-    embedding bytea,
+    embedding vector(1536),
     created_at timestamp default CURRENT_TIMESTAMP,
     updated_at timestamp default CURRENT_TIMESTAMP
 );
