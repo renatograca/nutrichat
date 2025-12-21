@@ -70,7 +70,8 @@ class AuthControllerTest {
     verify(context).json(argThat(response -> {
       final var authResponse = (AuthResponse) response;
       return "Authentication successful".equals(authResponse.message()) &&
-          token.equals(authResponse.token());
+          token.equals(authResponse.token()) &&
+          Long.valueOf(1L).equals(authResponse.userId());
     }));
   }
 
@@ -107,7 +108,9 @@ class AuthControllerTest {
   void testValidateToken_Success() {
     // Arrange
     final var token = "validToken";
+    final var userId = "1";
     when(context.header("Authorization")).thenReturn("Bearer " + token);
+    when(authService.validateToken(token)).thenReturn(userId);
 
     // Act
     authController.validateToken(context);
@@ -115,6 +118,11 @@ class AuthControllerTest {
     // Assert
     verify(authService).validateToken(token);
     verify(context).status(HttpStatus.OK);
+    verify(context).json(argThat(response -> {
+      final var authResponse = (AuthResponse) response;
+      return "Token is valid".equals(authResponse.message()) &&
+          Long.valueOf(1L).equals(authResponse.userId());
+    }));
   }
 
   @Test

@@ -43,7 +43,7 @@ public class AuthController implements Controller {
     }
 
     String token = authService.generateToken(userEntity.id());
-    sendSuccessResponse(context, token);
+    sendSuccessResponse(context, token, userEntity.id());
   }
 
   public void validateToken(Context context) {
@@ -53,17 +53,21 @@ public class AuthController implements Controller {
     }
 
     try {
-      authService.validateToken(token);
-      context.status(HttpStatus.OK).json(AuthResponse.builder().message("Token is valid").build());
+      String userId = authService.validateToken(token);
+      context.status(HttpStatus.OK).json(AuthResponse.builder()
+          .message("Token is valid")
+          .userId(Long.parseLong(userId))
+          .build());
     } catch (Exception e) {
       context.status(HttpStatus.UNAUTHORIZED).json(AuthResponse.builder().message("Token is invalid").build());
     }
   }
 
-  private void sendSuccessResponse(Context context, String token) {
+  private void sendSuccessResponse(Context context, String token, Long userId) {
     final var authResponse = AuthResponse.builder()
         .message("Authentication successful")
         .token(token)
+        .userId(userId)
         .build();
 
     context.status(HttpStatus.OK);
