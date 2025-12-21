@@ -7,7 +7,7 @@ export async function sendMessage(text) {
     const headers = { 'Content-Type': 'application/json' }
     const token = getToken()
     if (token) headers['Authorization'] = `Bearer ${token}`
-    const res = await fetch(`${CHAT_BASE_URL}/api/chat`, {
+    const res = await fetch(`${CHAT_BASE_URL}/api/chat/`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ text })
@@ -28,7 +28,7 @@ export async function uploadFile(file) {
     fd.append('file', file)
     const token = getToken()
     const headers = token ? { 'Authorization': `Bearer ${token}` } : undefined
-    const res = await fetch(`${CHAT_BASE_URL}/api/documents`, {
+    const res = await fetch(`${CHAT_BASE_URL}/api/documents/`, {
       method: 'POST',
       headers,
       body: fd
