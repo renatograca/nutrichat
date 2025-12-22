@@ -123,7 +123,7 @@ class ChatRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT id, user_id, document_id, title, created_at, updated_at FROM chat WHERE id = %s",
+                    "SELECT id, user_id, title, created_at, updated_at FROM chat WHERE id = %s",
                     (chat_id,)
                 )
                 r = cur.fetchone()
@@ -131,10 +131,9 @@ class ChatRepository:
                     return {
                         "id": str(r[0]),
                         "user_id": str(r[1]),
-                        "document_id": r[2],
-                        "title": r[3],
-                        "created_at": r[4],
-                        "updated_at": r[5]
+                        "title": r[2],
+                        "created_at": r[3],
+                        "updated_at": r[4]
                     }
                 return None
         except Exception as e:

@@ -17,7 +17,7 @@ class VectorStore:
                 id SERIAL PRIMARY KEY,
                 content TEXT,
                 metadata JSONB,
-                embedding vector(1536)
+                embedding vector(768)
             );
             """
             )
