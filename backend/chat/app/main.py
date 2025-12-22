@@ -1,6 +1,7 @@
 import uvicorn
 import logging
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import chat, documents
 import logging
 import sys
@@ -13,8 +14,17 @@ logging.basicConfig(
 
 app = FastAPI(title="NutriChat API")
 
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Em produção, especifique as origens permitidas
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+
+app.include_router(chat.router, prefix="/api/chats", tags=["chats"])
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
 
 

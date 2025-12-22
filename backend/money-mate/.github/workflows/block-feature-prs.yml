@@ -1,0 +1,51 @@
+name: Block Feature PRs to Main
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR source branch
+        id: check-branch
+        run: |
+          ALLOWED_BRANCHES=("hotfix/*" "fix/*" "release/*")
+          PR_BRANCH="$GITHUB_HEAD_REF"
+
+          for allowed_branch in "${ALLOWED_BRANCHES[@]}"; do
+            if [[ $PR_BRANCH == $allowed_branch ]]; then
+              echo "PR from branch '$PR_BRANCH' is allowed."
+              echo "allowed=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+
+          echo "PRs from branch '$PR_BRANCH' are not allowed to main."
+          echo "Allowed branches are: ${ALLOWED_BRANCHES[*]}"
+          echo "allowed=false" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Notify PR author if branch is not allowed
+        if: steps.check-branch.outputs.allowed == 'false'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const hasComment = comments.some(comment => comment.body.includes("PRs from this branch are not allowed"));
+
+            if (!hasComment) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: "🚫 PRs from this branch are not allowed to `main`. Allowed branches are: `hotfix/*`, `fix/*`, `release/*`.",
+              });
+            }

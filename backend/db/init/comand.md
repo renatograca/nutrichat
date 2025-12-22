@@ -1,0 +1,1 @@
+docker compose -f docker-compose.db.yml exec -T postgres psql -U postgres -f /docker-entrypoint-initdb.d/reset-all-databases.sql

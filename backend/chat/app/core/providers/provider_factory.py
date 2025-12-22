@@ -19,10 +19,9 @@ def get_ai_provider():
 def get_embedding_provider():
     provider_name = os.getenv("EMBEDDING_PROVIDER", "google").lower()
 
-    return LocalEmbeddingProvider()
     if provider_name == "google":
         return GoogleProvider()
-    # elif provider_name == "openai":
-    #     return OpenAIProvider()
+    elif provider_name == "local":
+        return LocalEmbeddingProvider()
     else:
         raise ValueError(f"Provider de Embeddings desconhecido: {provider_name}")

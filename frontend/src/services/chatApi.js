@@ -1,0 +1,96 @@
+import {CHAT_BASE_URL, getToken, getUserId} from './config'
+
+const getHeaders = () => {
+  const token = getToken()
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  }
+}
+
+export async function getChats() {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats?user_id=${userId}`, {
+    headers: getHeaders()
+  })
+  if (!res.ok) throw new Error('Failed to fetch chats')
+  return await res.json()
+}
+
+export async function getChat(chatId) {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`, {
+    headers: getHeaders()
+  })
+  if (!res.ok) throw new Error('Failed to fetch chat')
+  const data = await res.json()
+  console.log('getChat response:', data)
+  return data
+}
+
+export async function createChat(documentId = null) {
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ user_id: getUserId(), document_id: documentId })
+  })
+  if (!res.ok) throw new Error('Failed to create chat')
+  return await res.json()
+}
+
+export async function updateChatTitle(chatId, title) {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ user_id: userId, title })
+  })
+  if (!res.ok) throw new Error('Failed to update chat title')
+  return await res.json()
+}
+
+export async function getMessages(chatId) {
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages?user_id=${getUserId()}`, {
+    headers: getHeaders()
+  })
+  if (!res.ok) throw new Error('Failed to fetch messages')
+  return await res.json()
+}
+
+export async function sendMessage(chatId, message) {
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ message, user_id: getUserId() })
+  })
+  if (!res.ok) throw new Error('Failed to send message')
+  return await res.json()
+}
+
+export async function deleteChat(chatId) {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  })
+  if (!res.ok) throw new Error('Failed to delete chat')
+  return true
+}
+
+export async function uploadFile(file, chatId) {
+  const fd = new FormData()
+  fd.append('file', file)
+  fd.append('user_id', getUserId())
+  if(chatId) fd.append('chat_id', chatId)
+
+  const token = getToken()
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+
+  const res = await fetch(`${CHAT_BASE_URL}/api/documents/`, {
+    method: 'POST',
+    headers,
+    body: fd
+  })
+  if (!res.ok) throw new Error('Upload failed')
+  return await res.json()
+}

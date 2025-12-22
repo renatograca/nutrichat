@@ -1,0 +1,82 @@
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { login } from '../services/auth'
+
+export default function Login({ onLoginSuccess }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await login({ email, password })
+      onLoginSuccess()
+    } catch (err) {
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
+      } else {
+        setError('Falha no login. Verifique credenciais.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+      <div className="card shadow-sm p-4" style={{ maxWidth: '400px', width: '100%' }}>
+        <div className="card-body">
+          <div className="text-center mb-4">
+            <h3 className="text-primary fw-bold">NutriSmart</h3>
+            <p className="text-muted small">Faça login para continuar</p>
+          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">E-mail</label>
+              <input 
+                type="email" 
+                className="form-control"
+                id="email"
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="seu@email.com"
+                required 
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Senha</label>
+              <input 
+                type="password" 
+                className="form-control"
+                id="password"
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="Sua senha"
+                required 
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="btn btn-primary w-100 py-2 mb-3"
+              disabled={loading}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+            
+            <div className="text-center">
+              <Link to="/register" className="text-decoration-none text-secondary small">
+                Não tem conta? Cadastre-se
+              </Link>
+            </div>
+
+            {error && <div className="alert alert-danger mt-3 py-2 small" role="alert">{error}</div>}
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}

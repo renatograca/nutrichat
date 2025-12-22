@@ -1,128 +1,144 @@
-# 📱🥗 NutriChat – Projeto WebView
-Seu Assistente Inteligente de Plano Alimentar
+# PROMPT – Ajustes de UI/UX no Frontend (NutriChat)
+
+## Contexto
+O frontend do **NutriChat** é:
+- Um app WebView (mobile-first)
+- Desenvolvido em React
+- Possui múltiplos chats com histórico persistido
+- Possui upload de documento e chat com IA
+
+Recentemente o design da tela de chat foi alterado, porém precisamos **retornar ao design anterior**, que é:
+- Mais simples
+- Mais limpo
+- Mais focado em conversa
 
 ---
 
-## 🧠 PROMPT PRINCIPAL – NutriChat WebView
-
-### Contexto do Projeto
-Crie um aplicativo chamado **NutriChat**, que será executado **exclusivamente dentro de uma WebView** (Android e iOS).
-
-O aplicativo permite que o usuário:
-- Faça upload de um **plano nutricional** (PDF, DOCX ou TXT)
-- Interaja com um **assistente de IA** que responde **somente com base no documento enviado** (arquitetura RAG)
-
-⚠️ O app **não precisa de funcionalidades nativas avançadas**, pois todo o comportamento acontece via frontend web e backend em nuvem.
+## Objetivo
+Ajustar o frontend para:
+1. Restaurar o **design anterior da tela de chat**
+2. Exibir um **botão de inserir documento** ao iniciar um chat
+3. Mover a **lista de chats** para um **menu no header**
 
 ---
 
-### 🎯 Objetivo
-Criar uma aplicação:
-- Simples
-- Leve
-- Fácil de manter
-- Otimizada para WebView
-- Com visual saudável, confiável e inteligente
-- Fácil de subir em nuvem
+## Requisitos Funcionais
 
----
+### 1️⃣ Tela de Chat (ChatView)
 
-## 🧱 Tecnologias Recomendadas (WebView-Friendly)
-
-### Frontend
-- **Framework:** React + Vite
-- **Linguagem:** JavaScript (evitar TypeScript para simplicidade)
-- **Estilo:** CSS puro ou CSS Modules
-- **Arquitetura:** SPA simples
-- **Mobile-first**
-- **Sem SSR**
-- **PWA**
-
-## ☁️ Infraestrutura & Deploy
-- Build estático (`npm run build`)
-- Servir arquivos via:
-  - Nginx
-  - Vercel
-  - AWS S3 + CloudFront
-- Fácil manutenção e baixo custo operacional
-
----
-
-## 🎨 Estilo Visual – Identidade NutriChat
-
-O design deve transmitir:
-- 🥗 Saúde
-- 🧠 Inteligência
-- 🤝 Confiança
-- ✨ Simplicidade
-
-### Diretrizes Visuais
-- Paleta clara (verde, branco, tons naturais)
-- Tipografia legível
-- Espaçamento confortável
-- Ícones simples
+#### Design
+- Voltar para o layout anterior da tela de chat
 - Interface limpa
-- Pensado para toque (touch-friendly)
-- Sem excesso de animações
+- Mensagens em formato de balão
+- Área de input fixa na parte inferior
+- Sem distrações visuais
+
+#### Comportamento Inicial
+- Ao abrir um chat:
+  - Se o chat **não tiver documento associado**:
+    - Exibir botão claro: **“Inserir plano alimentar”**
+    - Botão deve ficar visível na área principal do chat (estado vazio)
+- Enquanto não houver documento:
+  - Input de mensagem deve ficar desabilitado
+  - Exibir texto explicativo simples
 
 ---
 
-## 🚫 O que EVITAR
-- Frameworks pesados de UI
-- Micro-frontends
-- Lógicas complexas no frontend
-- Dependência excessiva de estado global
-- Animações pesadas
-- Bibliotecas desnecessárias
+### 2️⃣ Upload de Documento no Chat
+
+- Botão de upload deve:
+  - Abrir seletor de arquivo
+  - Associar documento ao chat existente
+- Após upload:
+  - Remover estado vazio
+  - Habilitar campo de mensagem
+  - Manter usuário na mesma tela
 
 ---
 
-## ✅ RESULTADO ESPERADO
-- App WebView leve
-- Código limpo e organizado
-- Fácil de escalar
-- Fácil de manter
-- UX simples e eficiente
-- Visual profissional e moderno
+### 3️⃣ Header com Menu de Chats
+
+#### Header
+- Header fixo no topo
+- Exibir:
+  - Logo ou nome “NutriChat”
+  - Ícone de menu (☰ ou similar)
+
+#### Menu de Chats
+- Ao clicar no menu:
+  - Abrir lista de chats do usuário
+  - Lista pode ser:
+    - Drawer lateral
+    - Dropdown full-width
+- A lista deve permitir:
+  - Abrir chat existente
+  - Criar novo chat
+  - Apagar chat
 
 ---
 
-# 🧩 CHECKLIST TÉCNICO – NutriChat WebView
-
-## Frontend
-- [ ] React + Vite configurado
-- [ ] SPA simples
-- [ ] Layout mobile-first
-- [ ] CSS leve e otimizado
-- [ ] Upload de arquivos no chat
-- [ ] Chat responsivo
-- [ ] Tratamento de loading e erro
-- [ ] Compatível com WebView Android/iOS
-
-## Performance
-- [ ] Bundle pequeno
-- [ ] Sem dependências pesadas
-- [ ] Imagens otimizadas
-- [ ] Fontes leves
----
-
-# 🧱 TEMPLATE INICIAL – Estrutura do Projeto
+## Estrutura de Componentes (Sugestão)
 
 ```txt
-nutrichat-webview/
-├── public/
-│   ├── index.html
-│   └── manifest.json
-├── src/
-│   ├── components/
-│   │   ├── Chat.jsx
-│   │   └── Upload.jsx
-│   ├── services/
-│   │   └── api.js
-│   ├── styles/
-│   │   └── main.css
-│   ├── App.jsx
-│   └── main.jsx
-├── .env
-├── package.json
-└── vite.config.js
+components/
+├── Header.jsx
+├── ChatMenu.jsx
+├── ChatView.jsx
+├── UploadDocumentButton.jsx
+└── MessageBubble.jsx
+Regras de UX (Obrigatórias)
+Mobile-first
+
+Touch-friendly
+
+Poucos cliques
+
+Feedback visual claro
+
+Estados vazios bem definidos
+
+Evitar modais desnecessários
+
+Estados de UI Importantes
+Chat sem documento
+
+Upload em andamento
+
+Chat ativo
+
+Lista de chats vazia
+
+Erro de upload
+
+Restrições
+NÃO alterar a lógica de backend
+
+NÃO alterar contratos de API
+
+NÃO adicionar bibliotecas pesadas
+
+NÃO criar fluxos complexos
+
+Critérios de Aceite
+ Tela de chat voltou ao design anterior
+
+ Botão “Inserir documento” aparece ao iniciar chat
+
+ Input bloqueado sem documento
+
+ Menu de chats acessível pelo header
+
+ Navegação fluida em WebView
+
+ UX simples e intuitiva
+
+Observações Finais
+Priorizar simplicidade
+
+Manter código limpo
+
+Preparar UI para futuras evoluções
+
+O app deve parecer nativo dentro da WebView
+
+FIM DO PROMPT

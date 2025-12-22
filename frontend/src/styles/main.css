@@ -1,46 +1,98 @@
-:root{
-  --green-500:#2f855a;
-  --green-300:#68d391;
-  --bg:#ffffff;
-  --muted:#718096;
+:root {
+  --bs-primary: #4dbd74; /* Verde Menta Saudável */
+  --bs-primary-dark: #3a9d5d; /* Versão mais escura para hover */
+  --bs-secondary: #f8f9fa; /* Cinza claro para fundos de bolhas de chat */
+  --bs-success: #28a745; /* Manter ou ajustar ligeiramente */
+  --bs-body-bg: #ffffff; /* Fundo branco limpo */
+  --bs-body-color: #2c3e50; /* Texto em cinza escuro/azul para contraste inteligente */
+  --chat-bubble-user: #dcf8c6; /* Verde claro para mensagens do usuário */
+  --bs-primary-rgb: 77, 189, 116;
 }
-*{box-sizing:border-box}
-html,body,#root{height:100%}
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
-  background:var(--bg);
-  color:#1a202c;
-  -webkit-font-smoothing:antialiased;
+
+/* 3. Animação simples para a entrada suave de novas mensagens */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
 }
-.app-root{max-width:720px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh}
-.app-header{padding:18px;background:linear-gradient(90deg,var(--green-300),var(--green-500));color:white}
-.app-header h1{margin:0;font-size:1.2rem}
-.subtitle{margin:4px 0 0;font-size:0.85rem;opacity:0.95}
-.app-main{flex:1;padding:12px;display:flex;flex-direction:column;gap:12px}
-.app-footer{text-align:center;padding:10px;font-size:0.8rem;color:var(--muted)}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-.upload{display:flex;flex-direction:column;gap:8px}
-.upload form{display:flex;gap:8px}
-.upload input[type=file]{flex:1}
-.upload button{background:var(--green-500);color:white;border:none;padding:10px 12px;border-radius:6px}
-.upload-status{font-size:0.9rem;color:var(--muted)}
+/* Indicador de "Digitando..." (Loading State) pulse animation */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animation-pulse {
+  animation: pulse 1.5s infinite ease-in-out;
+}
 
-.chat{display:flex;flex-direction:column;gap:8px}
-.messages{min-height:200px;max-height:60vh;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
-.message{display:flex}
-.message.user{justify-content:flex-end}
-.message.assistant{justify-content:flex-start}
-.bubble{max-width:80%;padding:8px 12px;background:#edfdf2;border-radius:14px}
-.message.user .bubble{background:var(--green-500);color:#fff}
-.composer{display:flex;gap:8px;padding:8px;border-top:1px solid #eee}
-.composer input{flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:8px}
-.composer button{background:var(--green-500);color:white;border:none;padding:10px 12px;border-radius:8px}
+/* Override de botão primário */
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+.btn-primary:hover {
+  background-color: var(--bs-primary-dark);
+  border-color: var(--bs-primary-dark);
+}
 
-.empty{color:var(--muted);padding:12px;text-align:center}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
 
-@media (max-width:480px){
-  .app-root{padding:0}
-  .app-header{padding:14px}
-  .bubble{max-width:92%}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  -webkit-font-smoothing: antialiased;
+}
+
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+.card {
+  border: none;
+}
+
+/* Estilos adicionais para o chat RAG */
+.chat-container {
+  margin-top: 56px;
+  margin-bottom: 70px;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.chat-bubble-ia {
+  max-width: 75%;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.transition-opacity {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease-in-out;
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.extra-small {
+  font-size: 0.75rem;
 }

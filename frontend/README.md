@@ -13,7 +13,7 @@ Como usar (local):
    npm run dev
 
 Observações:
-- O frontend traz um serviço `src/services/api.js` com fallback local. Configure `VITE_API_BASE_URL` no `.env` para apontar um backend (ex: `http://localhost:3000`).
+- O frontend traz serviços em `src/services/` com fallback local. Configure `VITE_API_BASE_URL` no `.env` para apontar um backend (ex: `http://localhost:3000`).
 
 PWA & Deploy
 - O projeto inclui um `manifest.json` e um `sw.js` (service worker) simples em `public/` para cache offline básico.

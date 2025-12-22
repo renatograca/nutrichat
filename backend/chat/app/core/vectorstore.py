@@ -17,7 +17,7 @@ class VectorStore:
                 id SERIAL PRIMARY KEY,
                 content TEXT,
                 metadata JSONB,
-                embedding vector(1536)
+                embedding vector(768)
             );
             """
             )
@@ -34,18 +34,33 @@ class VectorStore:
             )
             self.conn.commit()
 
-    def similarity_search(self, query_embedding: list, top_k: int = 5):
+    def similarity_search(self, query_embedding: list, document_id: str = None, user_id: str = None, chat_id: str = None, top_k: int = 5):
         vector_str = "[" + ",".join(map(str, np.array(query_embedding).tolist())) + "]"
 
-        with self.conn.cursor() as cur:
-            cur.execute(
-                """
+        # Filtrar por document_id (Obrigatório conforme prompt)
+        query = """
                 SELECT content, metadata
                 FROM vector_store
+                WHERE metadata->>'document_id' = %s
+        """
+        params = [document_id]
+
+        # Opcionalmente validar user_id e chat_id
+        if user_id:
+            query += " AND metadata->>'user_id' = %s "
+            params.append(user_id)
+        
+        if chat_id:
+            query += " AND metadata->>'chat_id' = %s "
+            params.append(chat_id)
+
+        query += """
                 ORDER BY embedding <-> %s::vector
                 LIMIT %s
-            """,
-                (vector_str, top_k),
-            )
+        """
+        params.extend([vector_str, top_k])
+
+        with self.conn.cursor() as cur:
+            cur.execute(query, tuple(params))
             results = cur.fetchall()
         return results

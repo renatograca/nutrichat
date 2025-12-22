@@ -31,5 +31,9 @@ class GoogleProvider(BaseAIProvider):
         PERGUNTA:
         {question}
         """
+        return self.chat(prompt)
+
+    def chat(self, prompt: str) -> str:
+        """Envia um prompt genérico ao Gemini."""
         response = self.chat_model.generate_content(prompt)
         return response.text
