@@ -1,0 +1,38 @@
+# Exclude virtual env and local files from Docker build context
+venv
+venv/
+.venv
+.venv/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+
+# env files
+.env
+.env.*
+
+# git and editor
+.git
+.git/
+.idea/
+.vscode/
+.DS_Store
+
+# docs/tests and heavy data
+docs/
+tests/
+data/
+models/
+db/
+*.sqlite3
+*.db
+
+# build artifacts
+build/
+dist/
+*.egg-info
+*.whl
+
+# logs
+*.log
