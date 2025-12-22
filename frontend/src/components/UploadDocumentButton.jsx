@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { uploadFile, associateDocument } from '../services/chatApi'
+import { uploadFile } from '../services/chatApi'
 
 export default function UploadDocumentButton({ chatId, onUploadSuccess }) {
   const fileInputRef = useRef(null)
@@ -12,9 +12,7 @@ export default function UploadDocumentButton({ chatId, onUploadSuccess }) {
     try {
       setUploading(true)
       // 1. Upload do arquivo
-      const uploadRes = await uploadFile(file, chatId)
-      // 2. Associar ao chat
-      await associateDocument(chatId, uploadRes.id)
+      await uploadFile(file, chatId)
       
       onUploadSuccess()
     } catch (err) {
@@ -33,7 +31,7 @@ export default function UploadDocumentButton({ chatId, onUploadSuccess }) {
         ref={fileInputRef} 
         onChange={handleFileChange} 
         style={{ display: 'none' }} 
-        accept=".pdf,.doc,.docx,.txt"
+        accept=".pdf"
       />
       
       <div className="card border-primary border-dashed p-5 bg-light rounded-4">
@@ -57,7 +55,7 @@ export default function UploadDocumentButton({ chatId, onUploadSuccess }) {
             'Selecionar Arquivo'
           )}
         </button>
-        <div className="mt-3 small text-muted">Formatos aceitos: PDF, DOCX, TXT</div>
+        <div className="mt-3 small text-muted">Formato aceito: PDF</div>
       </div>
     </div>
   )

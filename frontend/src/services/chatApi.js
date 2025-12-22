@@ -23,7 +23,9 @@ export async function getChat(chatId) {
     headers: getHeaders()
   })
   if (!res.ok) throw new Error('Failed to fetch chat')
-  return await res.json()
+  const data = await res.json()
+  console.log('getChat response:', data)
+  return data
 }
 
 export async function createChat(documentId = null) {
@@ -36,46 +38,38 @@ export async function createChat(documentId = null) {
   return await res.json()
 }
 
-export async function associateDocument(chatId, documentId) {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/document`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ user_id: getUserId(), documentId })
-  })
-  if (!res.ok) throw new Error('Failed to associate document')
-  return await res.json()
-}
-
 export async function updateChatTitle(chatId, title) {
+  const userId = getUserId()
   const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}`, {
     method: 'PATCH',
     headers: getHeaders(),
-    body: JSON.stringify({ user_id: getUserId(), title })
+    body: JSON.stringify({ user_id: userId, title })
   })
   if (!res.ok) throw new Error('Failed to update chat title')
   return await res.json()
 }
 
 export async function getMessages(chatId) {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages`, {
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages?user_id=${getUserId()}`, {
     headers: getHeaders()
   })
   if (!res.ok) throw new Error('Failed to fetch messages')
   return await res.json()
 }
 
-export async function sendMessage(chatId, text) {
+export async function sendMessage(chatId, message) {
   const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ message, user_id: getUserId() })
   })
   if (!res.ok) throw new Error('Failed to send message')
   return await res.json()
 }
 
 export async function deleteChat(chatId) {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}`, {
+  const userId = getUserId()
+  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`, {
     method: 'DELETE',
     headers: getHeaders()
   })

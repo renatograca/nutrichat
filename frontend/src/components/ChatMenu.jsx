@@ -4,6 +4,9 @@ import { getChats, createChat, deleteChat } from '../services/chatApi'
 export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId }) {
   const [chats, setChats] = useState([])
   const [loading, setLoading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [chatToDelete, setChatToDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -33,18 +36,28 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId 
     }
   }
 
-  const handleDeleteChat = async (e, chatId) => {
+  const handleDeleteChat = (e, chatId) => {
     e.stopPropagation()
-    if (window.confirm('Deseja realmente apagar esta conversa?')) {
-      try {
-        await deleteChat(chatId)
-        setChats(chats.filter(c => c.id !== chatId))
-        if (currentChatId === chatId) {
-          onSelectChat(null)
-        }
-      } catch (err) {
-        alert('Erro ao apagar chat.')
+    setChatToDelete(chatId)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!chatToDelete) return
+    
+    try {
+      setDeleting(true)
+      await deleteChat(chatToDelete)
+      setChats(chats.filter(c => c.id !== chatToDelete))
+      if (currentChatId === chatToDelete) {
+        onSelectChat(null)
       }
+      setShowDeleteModal(false)
+      setChatToDelete(null)
+    } catch (err) {
+      alert('Erro ao apagar chat.')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -123,6 +136,51 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId 
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showDeleteModal && (
+        <div 
+          className="fixed-top w-100 h-100 d-flex align-items-center justify-content-center px-3"
+          style={{ zIndex: 1100 }}
+        >
+          <div 
+            className="position-absolute w-100 h-100 bg-dark opacity-50"
+            onClick={() => !deleting && setShowDeleteModal(false)}
+          ></div>
+          <div className="card border-0 shadow-lg position-relative" style={{ maxWidth: '400px', width: '100%' }}>
+            <div className="card-body p-4 text-center">
+              <div className="mb-3">
+                <i className="bi bi-exclamation-circle text-danger fs-1"></i>
+              </div>
+              <h5 className="card-title fw-bold mb-2">Apagar conversa?</h5>
+              <p className="card-text text-muted mb-4">
+                Esta ação não poderá ser desfeita e todo o histórico será perdido.
+              </p>
+              <div className="d-flex gap-2 justify-content-center">
+                <button 
+                  className="btn btn-light rounded-pill px-4"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="btn btn-danger rounded-pill px-4"
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Apagando...
+                    </>
+                  ) : 'Apagar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

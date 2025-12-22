@@ -32,14 +32,20 @@ export default function ChatView({ chatId, onBack }) {
   const loadChatData = async () => {
     try {
       setLoading(true)
-      const [info, msgs] = await Promise.all([
-        getChat(chatId),
-        getMessages(chatId)
-      ])
+      const info = await getChat(chatId)
+      console.log('Chat info loaded:', info)
       setChatInfo(info)
-      setMessages(msgs)
+      
+      try {
+        const msgs = await getMessages(chatId)
+        setMessages(msgs || [])
+      } catch (msgErr) {
+        console.warn('Could not load messages, but chat info is ok:', msgErr)
+      }
+      
       setError(null)
     } catch (err) {
+      console.error('Error loading chat data:', err)
       setError('Erro ao carregar dados do chat.')
     } finally {
       setLoading(false)
@@ -48,12 +54,12 @@ export default function ChatView({ chatId, onBack }) {
 
   const handleSend = async (e) => {
     e.preventDefault()
-    if (!inputText.trim() || sending || !chatInfo?.document_id) return
+    if (!inputText.trim() || sending || !hasDocument) return
 
     const userMsg = {
       id: Date.now(),
-      text: inputText,
-      role: 'user',
+      content: inputText,
+      role: 'USER',
       created_at: new Date().toISOString()
     }
 
@@ -62,8 +68,15 @@ export default function ChatView({ chatId, onBack }) {
     setSending(true)
 
     try {
-      const response = await sendMessage(chatId, userMsg.text)
-      setMessages(prev => [...prev, response])
+      const response = await sendMessage(chatId, userMsg.content)
+      // Garantir que a resposta do assistente use 'content' e role 'ASSISTANT'
+      const assistantMsg = {
+        ...response,
+        content: response.content || response.text,
+        role: response.role || 'ASSISTANT',
+        created_at: response.created_at || new Date().toISOString()
+      }
+      setMessages(prev => [...prev, assistantMsg])
     } catch (err) {
       alert('Erro ao enviar mensagem.')
     } finally {
@@ -81,7 +94,23 @@ export default function ChatView({ chatId, onBack }) {
     )
   }
 
-  const hasDocument = !!chatInfo?.document_id
+  if (error && !chatInfo) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center h-100 p-3">
+        <div className="alert alert-danger w-100 max-width-md" role="alert">
+          <h4 className="alert-heading"><i className="bi bi-exclamation-triangle-fill me-2"></i>Erro</h4>
+          <p>{error}</p>
+          <hr />
+          <div className="d-flex justify-content-end">
+            <button className="btn btn-outline-danger" onClick={loadChatData}>Tentar novamente</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const hasDocument = !!(chatInfo?.document_id || chatInfo?.documentId)
+  console.log('Rendering ChatView, hasDocument:', hasDocument, 'chatInfo:', chatInfo)
 
   return (
     <div className="d-flex flex-column h-100 bg-white">
@@ -101,6 +130,7 @@ export default function ChatView({ chatId, onBack }) {
             <p>Plano alimentar carregado! Pergunte qualquer coisa sobre sua dieta.</p>
           </div>
         ) : (
+          console.log('Renderizando mensagens:', messages),
           messages.map((msg, idx) => (
             <MessageBubble key={msg.id || idx} message={msg} />
           ))
