@@ -1,11 +1,13 @@
 from app.utils.pdf_utils import extract_text_from_pdf
 from app.core.vectorstore import VectorStore
+from app.core.document_repository import DocumentRepository
 from datetime import datetime
 import tiktoken
 import os
 from app.core.providers.provider_factory import get_embedding_provider
 
 ai_provider = get_embedding_provider()
+doc_repo = DocumentRepository()
 
 
 def chunk_text(text: str, max_tokens: int = 500):
@@ -36,6 +38,9 @@ def ingest_pdf(file_bytes: bytes, filename: str, user_id: str, chat_id: str = No
     text = extract_text_from_pdf(file_bytes)
     chunks = chunk_text(text)
 
+    # 1.5️⃣ Persistir documento e obter document_id
+    document_id = doc_repo.create_document(user_id, filename)
+
     # 2️⃣ Define provedor via variável de ambiente
     provider_name = os.getenv("EMBEDDING_PROVIDER", "google")
     vector_store = VectorStore()
@@ -48,12 +53,14 @@ def ingest_pdf(file_bytes: bytes, filename: str, user_id: str, chat_id: str = No
             "chunk_index": i,
             "timestamp": datetime.utcnow().isoformat(),
             "user_id": user_id,
-            "chat_id": chat_id
+            "chat_id": chat_id,
+            "document_id": document_id
         }
         vector_store.add(chunk, metadata, embedding)
 
     return {
         "message": f"Documento '{filename}' processado com sucesso usando {provider_name.title()}.",
         "chunks_count": len(chunks),
-        "user_id": user_id
+        "user_id": user_id,
+        "document_id": document_id
     }

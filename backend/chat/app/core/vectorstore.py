@@ -34,16 +34,22 @@ class VectorStore:
             )
             self.conn.commit()
 
-    def similarity_search(self, query_embedding: list, user_id: str, chat_id: str = None, top_k: int = 5):
+    def similarity_search(self, query_embedding: list, document_id: str = None, user_id: str = None, chat_id: str = None, top_k: int = 5):
         vector_str = "[" + ",".join(map(str, np.array(query_embedding).tolist())) + "]"
 
+        # Filtrar por document_id (Obrigatório conforme prompt)
         query = """
                 SELECT content, metadata
                 FROM vector_store
-                WHERE metadata->>'user_id' = %s
+                WHERE metadata->>'document_id' = %s
         """
-        params = [user_id]
+        params = [document_id]
 
+        # Opcionalmente validar user_id e chat_id
+        if user_id:
+            query += " AND metadata->>'user_id' = %s "
+            params.append(user_id)
+        
         if chat_id:
             query += " AND metadata->>'chat_id' = %s "
             params.append(chat_id)

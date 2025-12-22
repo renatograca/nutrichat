@@ -6,6 +6,7 @@ class DocumentIngestResponse(BaseModel):
     message: str
     chunks_count: int
     user_id: Optional[str] = None
+    document_id: Optional[str] = None
 
 
 class ChatRequest(BaseModel):

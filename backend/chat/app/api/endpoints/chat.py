@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body, HTTPException, Query
 from app.core.chat_service import ask_question
 from app.core.chat_repository import ChatRepository
+from app.core.document_repository import DocumentRepository
 from app.models.chat import (
     ChatCreate, ChatResponse, ChatListResponse, 
     ChatMessageCreate, ChatMessageResponse, MessageListResponse
@@ -9,6 +10,7 @@ from typing import List
 
 router = APIRouter()
 chat_repo = ChatRepository()
+doc_repo = DocumentRepository()
 
 @router.post("", response_model=ChatResponse)
 def create_chat(chat_data: ChatCreate = Body(None)):
@@ -20,7 +22,7 @@ def create_chat(chat_data: ChatCreate = Body(None)):
 
 @router.post("/{chatId}/document")
 def associate_document(chatId: str, body: dict = Body(...)):
-    document_id = body.get("documentId")
+    document_id = body.get("document_id")
     user_id = body.get("user_id") # Idealmente viria do token
     
     if not document_id:
@@ -29,9 +31,12 @@ def associate_document(chatId: str, body: dict = Body(...)):
     chat = chat_repo.get_chat(chatId)
     if not chat or chat['user_id'] != user_id:
         raise HTTPException(status_code=404, detail="Chat não encontrado")
-    
-    # TODO: Validar se o documento pertence ao usuário se houver uma tabela de documentos
-    
+
+    # Validar se o documento existe e pertence ao usuário
+    doc = doc_repo.get_document(document_id)
+    if not doc or doc.get('user_id') != user_id:
+        raise HTTPException(status_code=404, detail="Documento não encontrado ou não pertence ao usuário")
+
     chat_repo.update_chat_document(chatId, document_id)
     return {"message": "Documento associado com sucesso"}
 
@@ -59,6 +64,13 @@ def list_chats(user_id: str = Query(None)):
     except Exception:
         return []
 
+@router.get("/{chatId}", response_model=ChatResponse)
+def get_chat(chatId: str, user_id: str = Query(...)):
+    chat = chat_repo.get_chat(chatId)
+    if not chat or chat['user_id'] != user_id:
+        raise HTTPException(status_code=404, detail="Chat não encontrado")
+    return chat
+
 @router.get("/{chatId}/messages", response_model=List[ChatMessageResponse])
 def get_messages(chatId: str, user_id: str = Query(...)):
     chat = chat_repo.get_chat(chatId)
@@ -78,7 +90,7 @@ def send_message(chatId: str, msg_data: ChatMessageCreate):
     if not chat.get('document_id'):
         raise HTTPException(
             status_code=400, 
-            detail="Este chat não possui um documento associado. Por favor, faça o upload de um plano nutricional primeiro."
+            detail="Chat não possui documento associado"
         )
     
     # 1. Salvar mensagem do usuário
@@ -90,7 +102,13 @@ def send_message(chatId: str, msg_data: ChatMessageCreate):
     # 3. Salvar mensagem do assistente
     chat_repo.add_message(chatId, "ASSISTANT", resposta)
     
-    return {"pergunta": msg_data.message, "text": resposta, "user_id": msg_data.user_id}
+    return {
+        "pergunta": msg_data.message, 
+        "text": resposta, 
+        "user_id": msg_data.user_id,
+        "role": "ASSISTANT",
+        "created_at": datetime.utcnow().isoformat()
+    }
 
 @router.delete("/{chatId}")
 def delete_chat(chatId: str, user_id: str = Query(...)):

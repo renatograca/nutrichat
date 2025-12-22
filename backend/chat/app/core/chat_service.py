@@ -56,8 +56,19 @@ def ask_question(question: str, user_id: str, chat_id: str = None, top_k: int = 
     # 1. Obter embedding da pergunta
     query_embedding = embegging_provider.embed_text(question)
 
-    # 2. Buscar contexto no vector store filtrando por user_id e chat_id
-    docs = vector_store.similarity_search(query_embedding, user_id, chat_id=chat_id, top_k=top_k)
+    # 1.5 Obter chat e garantir que existe document_id associado
+    document_id = None
+    if chat_id:
+        chat = chat_repo.get_chat(chat_id)
+        if not chat or chat.get('user_id') != user_id:
+            raise Exception("Chat não encontrado ou não pertence ao usuário")
+        document_id = chat.get('document_id')
+    
+    if not document_id:
+        raise Exception("Chat não possui documento associado")
+
+    # 2. Buscar contexto no vector store filtrando por document_id
+    docs = vector_store.similarity_search(query_embedding, document_id=document_id, user_id=user_id, chat_id=chat_id, top_k=top_k)
     context = "\n".join([d[0] for d in docs])
 
     # 3. Obter histórico recente se chat_id for fornecido

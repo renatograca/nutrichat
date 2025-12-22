@@ -1,6 +1,7 @@
 import psycopg2
 import logging
 from app.config import DATABASE_URL
+from app.core.document_repository import DocumentRepository
 from typing import List, Optional
 from datetime import datetime
 
@@ -23,22 +24,25 @@ class ChatRepository:
             with conn.cursor() as cur:
                 # Habilitar extensão para UUID se necessário (PostgreSQL < 13)
                 cur.execute("CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";")
-                # Tabela de Chat
+                # Tabela de Chats
                 cur.execute("""
-                    CREATE TABLE IF NOT EXISTS chat (
+                    CREATE TABLE IF NOT EXISTS chats (
                         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                         user_id TEXT NOT NULL,
-                        document_id TEXT,
+                        document_id UUID REFERENCES documents(id),
                         title TEXT,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                     );
                 """)
+                # Criar índice para document_id
+                cur.execute("CREATE INDEX IF NOT EXISTS idx_chats_document_id ON chats(document_id);")
+
                 # Tabela de Mensagens
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS chat_message (
                         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                        chat_id UUID REFERENCES chat(id) ON DELETE CASCADE,
+                        chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
                         role TEXT NOT NULL,
                         content TEXT NOT NULL,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -55,7 +59,7 @@ class ChatRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO chat (user_id, title) VALUES (%s, %s) RETURNING id",
+                    "INSERT INTO chats (user_id, title) VALUES (%s, %s) RETURNING id",
                     (user_id, title)
                 )
                 chat_id = cur.fetchone()[0]
@@ -69,9 +73,10 @@ class ChatRepository:
     def update_chat_document(self, chat_id: str, document_id: str):
         conn = self._get_connection()
         try:
+            # Atualizar sem validação direta; endpoint/service deve validar ownership
             with conn.cursor() as cur:
                 cur.execute(
-                    "UPDATE chat SET document_id = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                    "UPDATE chats SET document_id = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
                     (document_id, chat_id)
                 )
                 conn.commit()
@@ -85,7 +90,7 @@ class ChatRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "UPDATE chat SET title = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                    "UPDATE chats SET title = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
                     (title, chat_id)
                 )
                 conn.commit()
@@ -99,7 +104,7 @@ class ChatRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT id, user_id, document_id, title, created_at, updated_at FROM chat WHERE user_id = %s ORDER BY updated_at DESC",
+                    "SELECT id, user_id, document_id, title, created_at, updated_at FROM chats WHERE user_id = %s ORDER BY updated_at DESC",
                     (user_id,)
                 )
                 rows = cur.fetchall()
@@ -107,7 +112,7 @@ class ChatRepository:
                     {
                         "id": str(r[0]),
                         "user_id": str(r[1]),
-                        "document_id": r[2],
+                        "document_id": str(r[2]) if r[2] else None,
                         "title": r[3],
                         "created_at": r[4],
                         "updated_at": r[5]
@@ -123,7 +128,7 @@ class ChatRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT id, user_id, title, created_at, updated_at FROM chat WHERE id = %s",
+                    "SELECT id, user_id, document_id, title, created_at, updated_at FROM chats WHERE id = %s",
                     (chat_id,)
                 )
                 r = cur.fetchone()
@@ -131,9 +136,10 @@ class ChatRepository:
                     return {
                         "id": str(r[0]),
                         "user_id": str(r[1]),
-                        "title": r[2],
-                        "created_at": r[3],
-                        "updated_at": r[4]
+                        "document_id": str(r[2]) if r[2] else None,
+                        "title": r[3],
+                        "created_at": r[4],
+                        "updated_at": r[5]
                     }
                 return None
         except Exception as e:
@@ -145,7 +151,7 @@ class ChatRepository:
         conn = self._get_connection()
         try:
             with conn.cursor() as cur:
-                cur.execute("DELETE FROM chat WHERE id = %s", (chat_id,))
+                cur.execute("DELETE FROM chats WHERE id = %s", (chat_id,))
                 conn.commit()
         except Exception as e:
             conn.rollback()
@@ -161,7 +167,7 @@ class ChatRepository:
                     (chat_id, role, content)
                 )
                 cur.execute(
-                    "UPDATE chat SET updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                    "UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = %s",
                     (chat_id,)
                 )
                 conn.commit()
