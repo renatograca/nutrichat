@@ -5,13 +5,28 @@ import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 
 public class DataBaseConfig {
+  private static HikariDataSource dataSource;
+
   public static DataSource getDataSource() {
-    final var config = new HikariConfig();
-    config.setJdbcUrl(System.getenv().getOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/user_db"));
-    config.setUsername(System.getenv().getOrDefault("DB_USER", "postgres"));
-    config.setPassword(System.getenv().getOrDefault("DB_PASSWORD", "postgres"));
-    config.setDriverClassName("org.postgresql.Driver");
-    config.setMaximumPoolSize(Integer.parseInt(System.getenv().getOrDefault("DB_MAX_POOL_SIZE", "10")));
-    return new HikariDataSource(config);
+    if (dataSource == null) {
+      HikariConfig config = new HikariConfig();
+
+      String dbUrl = System.getenv("DATABASE_URL");
+
+      config.setJdbcUrl("jdbc:" + dbUrl);
+      config.setUsername(System.getenv("DB_USER"));
+      config.setPassword(System.getenv("DB_PASSWORD"));
+
+      config.setMaximumPoolSize(10);
+      config.setMinimumIdle(2);
+      config.setConnectionTimeout(30000);
+      config.setIdleTimeout(60000);
+      config.setMaxLifetime(1800000);
+
+      config.setDriverClassName("org.postgresql.Driver");
+
+      dataSource = new HikariDataSource(config);
+    }
+    return dataSource;
   }
 }
