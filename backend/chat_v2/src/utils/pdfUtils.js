@@ -1,4 +1,4 @@
-import { getDocument, getName } from 'pdfjs-dist';
+import { getDocument } from 'pdfjs-dist';
 
 async function extractTextFromPdf(fileBytes) {
   try {
