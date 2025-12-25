@@ -1,0 +1,70 @@
+import VectorStore from '../core/VectorStore.js';
+import { getAIProvider, getEmbeddingProvider } from '../core/providers/providerFactory.js';
+import ChatRepository from '../repositories/ChatRepository.js';
+
+const embeddingProvider = getEmbeddingProvider();
+const aiProvider = getAIProvider();
+const chatRepository = new ChatRepository();
+
+async function askQuestion(question, userId, chatId = null, topK = 5) {
+  try {
+    // 1. Obter embedding da pergunta
+    const queryEmbedding = await embeddingProvider.embedText(question);
+
+    // 1.5. Obter chat e garantir que existe document_id associado
+    let documentId = null;
+    if (chatId) {
+      const chat = await chatRepository.getChat(chatId);
+      if (!chat || chat.user_id !== userId) {
+        throw new Error('Chat não encontrado ou não pertence ao usuário');
+      }
+      documentId = chat.document_id;
+    }
+
+    if (!documentId) {
+      throw new Error('Chat não possui documento associado');
+    }
+
+    // 2. Buscar contexto no vector store filtrando por document_id
+    const vectorStore = new VectorStore();
+    const docs = await vectorStore.similaritySearch(queryEmbedding, {
+      documentId,
+      userId,
+      chatId,
+      topK,
+    });
+    const context = docs.map((d) => d.content).join('\n');
+
+    // 3. Obter histórico recente se chat_id for fornecido
+    let historyStr = '';
+    if (chatId) {
+      const messages = await chatRepository.getChatMessages(chatId, 10);
+      historyStr = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+    }
+
+    // 4. Construir prompt com histórico e contexto
+    const fullPrompt = `
+Você é um assistente de nutrição amigável e informativo.
+Responda exclusivamente com base no contexto do documento fornecido abaixo.
+Se a resposta não existir no plano nutricional, informe que não possui essa informação.
+
+Histórico da conversa:
+${historyStr}
+
+Contexto do Documento:
+${context}
+
+Pergunta:
+${question}
+`;
+
+    // 5. Fazer pergunta ao modelo
+    const response = await aiProvider.chat(fullPrompt);
+
+    return response;
+  } catch (error) {
+    throw new Error(`Erro ao fazer pergunta: ${error.message}`);
+  }
+}
+
+export { askQuestion };
