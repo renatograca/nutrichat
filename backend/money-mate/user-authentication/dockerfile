@@ -5,34 +5,38 @@ WORKDIR /app
 
 # Copiar arquivos de configuração do gradle
 COPY gradle/ gradle/
-COPY gradlew gradlew.bat settings.gradle build.gradle ./
+COPY gradlew settings.gradle build.gradle ./
+
+# Dar permissão de execução ao gradlew
+RUN chmod +x gradlew
 
 # Copiar código fonte
 COPY src/ src/
 
-# Build do projeto
-RUN gradle build -x test
+# Build do projeto (gera o fat jar)
+RUN ./gradlew clean build -x test
 
-# Runtime stage
-FROM openjdk:21-jdk-slim
+# Runtime stage (Usando Eclipse Temurin 21)
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Copiar JAR do builder
-COPY --from=builder /app/build/libs/*.jar app.jar
+# Instalar curl para o Healthcheck (Alpine não vem com ele por padrão)
+RUN apk add --no-cache curl
 
-# Variáveis de ambiente padrão
-ENV db_url=jdbc:postgresql://postgres:5432/user_db \
-    db_user=postgres \
-    db_pass=postgres \
-    jwt_secret=sua_secret_key_aqui
+# Copiar apenas o JAR principal do builder
+# Dica: Verifique se o nome do jar é fixo ou use um padrão que ignore o "-plain.jar"
+COPY --from=builder /app/build/libs/*-all.jar app.jar || COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Expose porta padrão do Javalin
+# Variáveis de ambiente (O Render sobrescreverá estas)
+ENV PORT=8080
+
+# Expose porta padrão
 EXPOSE 8080
 
-# Health check
+# Health check corrigido para usar a variável de porta
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD curl -f http://localhost:${PORT}/health || exit 1
 
 # Executar a aplicação
 CMD ["java", "-jar", "app.jar"]
