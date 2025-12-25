@@ -1,0 +1,72 @@
+import pool from '../db/pool.js';
+import { logger } from '../utils/logger.js';
+
+class DocumentRepository {
+  constructor() {
+    this._ensureTable();
+  }
+
+  async _ensureTable() {
+    const client = await pool.connect();
+    try {
+      await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id TEXT NOT NULL,
+          filename TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await client.query('COMMIT;');
+    } catch (error) {
+      logger.error(`Erro ao garantir tabela documents: ${error.message}`);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async createDocument(userId, fileName) {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'INSERT INTO documents (user_id, filename) VALUES ($1, $2) RETURNING id',
+        [userId, fileName]
+      );
+      return result.rows[0].id.toString();
+    } catch (error) {
+      logger.error(`Erro ao criar documento: ${error.message}`);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getDocument(documentId) {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT id, user_id, filename, created_at FROM documents WHERE id = $1',
+        [documentId]
+      );
+      const r = result.rows[0];
+      if (r) {
+        return {
+          id: r.id.toString(),
+          user_id: r.user_id,
+          filename: r.filename,
+          created_at: r.created_at,
+        };
+      }
+      return null;
+    } catch (error) {
+      logger.error(`Erro ao buscar documento ${documentId}: ${error.message}`);
+      return null;
+    } finally {
+      client.release();
+    }
+  }
+}
+
+export default DocumentRepository;
