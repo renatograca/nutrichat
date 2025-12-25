@@ -11,7 +11,7 @@ RUN ./gradlew dependencies --no-daemon
 COPY src/ src/
 RUN ./gradlew clean build -x test --no-daemon
 
-RUN cp build/libs/[!*plain]*.jar /app/app-ready.jar
+RUN cp $(ls -S build/libs/*.jar | grep -v "plain" | head -n 1) /app/app-ready.jar
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
