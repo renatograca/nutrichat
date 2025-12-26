@@ -1,6 +1,6 @@
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 
-const logRequestsMiddleware = (req, res, next) => {
+const logRequestsMiddleware = (req: any, res: any, next: any) => {
   logger.info(`📥 ${req.method} ${req.originalUrl}`);
 
   res.on('finish', () => {
@@ -11,3 +11,4 @@ const logRequestsMiddleware = (req, res, next) => {
 };
 
 export { logRequestsMiddleware };
+

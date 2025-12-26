@@ -1,10 +1,10 @@
-import { ingestPdf } from '../services/DocumentService.js';
-import ChatRepository from '../repositories/ChatRepository.js';
-import { logger } from '../utils/logger.js';
+import { ingestPdf } from '../services/DocumentService';
+import ChatRepository from '../repositories/ChatRepository';
+import { logger } from '../utils/logger';
 
 const chatRepository = new ChatRepository();
 
-export const ingestDocument = async (req, res) => {
+export const ingestDocument = async (req: any, res: any) => {
   try {
     const file = req.file;
     const { user_id, chat_id } = req.body;
@@ -41,8 +41,9 @@ export const ingestDocument = async (req, res) => {
     }
 
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     logger.error(`Erro ao ingerir documento: ${error.message}`);
     res.status(400).json({ detail: error.message });
   }
 };
+

@@ -1,5 +1,5 @@
 import pkg from 'pg';
-import { DATABASE_URL } from '../config/config.js';
+import { DATABASE_URL } from '../config/config';
 
 const { Pool } = pkg;
 
@@ -12,3 +12,4 @@ pool.on('error', (err) => {
 });
 
 export default pool;
+

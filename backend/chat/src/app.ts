@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import { PORT } from './config/config.js';
-import chatRoutes from './routes/chatRoutes.js';
-import documentRoutes from './routes/documentRoutes.js';
-import { logRequestsMiddleware } from './middlewares/logMiddleware.js';
-import { logger } from './utils/logger.js';
+import { PORT } from './config/config';
+import chatRoutes from './routes/chatRoutes';
+import documentRoutes from './routes/documentRoutes';
+import { logRequestsMiddleware } from './middlewares/logMiddleware';
+import { logger } from './utils/logger';
 
 const app = express();
 
@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(logRequestsMiddleware);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (req: any, res: any) => {
   res.json({ status: 'ok' });
 });
 
@@ -23,7 +23,7 @@ app.use('/api/chats', chatRoutes);
 app.use('/api/documents', documentRoutes);
 
 // Error handling
-app.use((err, req, res, next) => {
+app.use((err: any, req: any, res: any, next: any) => {
   logger.error(`Erro não tratado: ${err.message}`);
   res.status(500).json({ detail: 'Erro interno do servidor' });
 });
@@ -34,3 +34,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+

@@ -1,21 +1,21 @@
-import { extractTextFromPdf } from '../utils/pdfUtils.js';
-import VectorStore from '../core/VectorStore.js';
-import DocumentRepository from '../repositories/DocumentRepository.js';
-import { getEmbeddingProvider } from '../core/providers/providerFactory.js';
+import { extractTextFromPdf } from '../utils/pdfUtils';
+import VectorStore from '../core/VectorStore';
+import DocumentRepository from '../repositories/DocumentRepository';
+import { getEmbeddingProvider } from '../core/providers/providerFactory';
 
 const embeddingProvider = getEmbeddingProvider();
 const documentRepository = new DocumentRepository();
 
 // Token counting approximation for JavaScript
-function countTokens(text) {
+function countTokens(text: any) {
   // Approximation: ~4 characters per token (similar to tiktoken)
   return Math.ceil(text.length / 4);
 }
 
-function chunkText(text, maxTokens = 500) {
-  const chunks = [];
+function chunkText(text: any, maxTokens: any = 500) {
+  const chunks: any[] = [];
   const lines = text.split('\n');
-  let current = [];
+  let current: any[] = [];
   let tokensCount = 0;
 
   for (const line of lines) {
@@ -36,7 +36,7 @@ function chunkText(text, maxTokens = 500) {
   return chunks;
 }
 
-async function ingestPdf(fileBytes, filename, userId, chatId = null) {
+async function ingestPdf(fileBytes: any, filename: any, userId: any, chatId: any = null) {
   try {
     // 1. Ler o PDF e dividir em chunks
     const text = await extractTextFromPdf(fileBytes);
@@ -52,7 +52,7 @@ async function ingestPdf(fileBytes, filename, userId, chatId = null) {
     // 3. Gerar embeddings e salvar
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      const embedding = await embeddingProvider.embedText(chunk);
+      const embedding = await (embeddingProvider as any).embedText(chunk);
       const metadata = {
         file_name: filename,
         chunk_index: i + 1,
@@ -70,9 +70,10 @@ async function ingestPdf(fileBytes, filename, userId, chatId = null) {
       user_id: userId,
       document_id: documentId,
     };
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`Erro ao ingerir PDF: ${error.message}`);
   }
 }
 
 export { ingestPdf };
+

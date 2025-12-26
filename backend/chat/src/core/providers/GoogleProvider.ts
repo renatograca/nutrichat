@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import BaseAIProvider from './BaseAIProvider.js';
+import BaseAIProvider from './BaseAIProvider';
 
 class GoogleProvider extends BaseAIProvider {
+  client: any;
+  chatModel: any;
+  embeddingModel: any;
+
   constructor() {
     super();
     const apiKey = process.env.GOOGLE_API_KEY;
@@ -13,19 +17,19 @@ class GoogleProvider extends BaseAIProvider {
     this.embeddingModel = 'models/embedding-001';
   }
 
-  async embedText(text) {
+  async embedText(text: any) {
     try {
-      const result = await this.client.embedContent({
-        model: this.embeddingModel,
+      const result = await (this as any).client.embedContent({
+        model: (this as any).embeddingModel,
         content: text,
       });
       return result.embedding.values;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Erro ao gerar embedding: ${error.message}`);
     }
   }
 
-  async askQuestion(question, context) {
+  async askQuestion(question: any, context: any) {
     const prompt = `
 Você é um assistente de nutrição amigável e informativo.
 Responda usando apenas o contexto abaixo.
@@ -40,14 +44,15 @@ ${question}
     return this.chat(prompt);
   }
 
-  async chat(prompt) {
+  async chat(prompt: any) {
     try {
-      const response = await this.chatModel.generateContent(prompt);
+      const response = await (this as any).chatModel.generateContent(prompt);
       return response.response.text();
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Erro ao gerar resposta do chat: ${error.message}`);
     }
   }
 }
 
 export default GoogleProvider;
+

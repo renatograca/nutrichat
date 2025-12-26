@@ -1,5 +1,5 @@
 import express from 'express';
-import * as ChatController from '../controllers/ChatController.js';
+import * as ChatController from '../controllers/ChatController';
 
 const router = express.Router();
 
@@ -28,3 +28,4 @@ router.post('/:chatId/messages', ChatController.sendMessage);
 router.delete('/:chatId', ChatController.deleteChat);
 
 export default router;
+
