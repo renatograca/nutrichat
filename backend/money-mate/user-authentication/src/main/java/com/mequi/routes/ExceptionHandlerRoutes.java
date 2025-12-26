@@ -45,7 +45,7 @@ public class ExceptionHandlerRoutes implements Routers {
       context.json(ErrorResponse.builder().message(e.getMessage()).build());
     });
 
-    server.exception(Exception.class, (e, context) -> {
+    server.exception(Exception.class, (_, context) -> {
       context.status(HttpStatus.INTERNAL_SERVER_ERROR);
       context.json(ErrorResponse.builder().message("An unexpected error occurred").build());
     });

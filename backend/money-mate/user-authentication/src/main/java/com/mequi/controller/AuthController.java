@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mequi.config.context.auth.AuthContextService;
 import com.mequi.controller.dto.AuthResponse;
-import com.mequi.exceptions.ApiException;
 import com.mequi.exceptions.BadRequestException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;

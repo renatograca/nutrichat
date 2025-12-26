@@ -49,7 +49,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void testLogin_Success() throws UserNotFoundException, InvalidPasswordException, ApiException {
+  void testLogin_Success() throws UserNotFoundException, InvalidPasswordException {
     // Arrange
     final var password = "password";
     final var email = "test@example.com";
