@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mequi.config.context.auth.AuthContextService;
 import com.mequi.controller.dto.AuthResponse;
+import com.mequi.exceptions.ApiException;
+import com.mequi.exceptions.BadRequestException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.service.auth.AuthService;
@@ -21,15 +23,15 @@ public class AuthController implements Controller {
   private final AuthService authService;
   private final UserService userService;
 
-  public void login(Context context) throws UserNotFoundException, InvalidPasswordException {
+  public void login(Context context) throws UserNotFoundException, InvalidPasswordException, ApiException {
     final var authContext = authContextService.apply(context);
 
     if (authContext.user() == null) {
-      throw new UserNotFoundException("Invalid user");
+      throw new BadRequestException("User is Null or Invalid");
     }
 
     if (authContext.user().email() == null) {
-      throw new UserNotFoundException("Invalid email");
+      throw new BadRequestException("Email is Null or Invalid");
     }
 
     final var userEntity = userService.findByEmail(authContext.user().email()).orElse(null);

@@ -11,6 +11,7 @@ import com.mequi.config.context.auth.AuthContextService;
 import com.mequi.config.context.auth.dto.AuthContext;
 import com.mequi.controller.AuthController;
 import com.mequi.controller.dto.AuthResponse;
+import com.mequi.exceptions.ApiException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.repository.user.entity.UserEntity;
@@ -50,7 +51,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void testLogin_Success() throws UserNotFoundException, InvalidPasswordException {
+  void testLogin_Success() throws UserNotFoundException, InvalidPasswordException, ApiException {
     // Arrange
     final var password = "password";
     final var email = "test@example.com";
@@ -76,7 +77,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void testLogin_UserNotFound() throws UserNotFoundException {
+  void testLogin_UserNotFound() throws ApiException {
     // Arrange
     final var email = "notfound@example.com";
     final var authContext = AuthContext.builder().user(UserAuthData.builder().email(email).password("password").build()).build();
@@ -85,11 +86,11 @@ class AuthControllerTest {
     when(userService.findByEmail(email)).thenReturn(Optional.empty());
 
     // Act & Assert
-    assertThrows(UserNotFoundException.class, () -> authController.login(context));
+    assertThrows(ApiException.class, () -> authController.login(context));
   }
 
   @Test
-  void testLogin_InvalidPassword() throws UserNotFoundException {
+  void testLogin_InvalidPassword() throws ApiException {
     // Arrange
     final var correctPassword = "correctPassword";
     final var wrongPassword = "wrongPassword";
