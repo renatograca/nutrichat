@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "generate-icons": "node scripts/generate-icons.js",
-    "build": "npx vite build",
+    "build": "vite build",
     "start": "vite preview"
   },
   "dependencies": {
