@@ -3,10 +3,7 @@ package com.mequi.routes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.mequi.exceptions.ApiException;
-import com.mequi.exceptions.ErrorResponse;
-import com.mequi.exceptions.InvalidPasswordException;
-import com.mequi.exceptions.UserNotFoundException;
+import com.mequi.exceptions.*;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 import java.sql.SQLException;
@@ -18,6 +15,11 @@ public class ExceptionHandlerRoutes implements Routers {
 
   @Override
   public void addRoutes(Javalin server) {
+    server.exception(BadRequestException.class, (e, context) -> {
+      context.status(HttpStatus.BAD_REQUEST);
+      context.json(ErrorResponse.builder().message(e.getMessage()).build());
+    });
+
     server.exception(UserNotFoundException.class, (e, context) -> {
       context.status(HttpStatus.NOT_FOUND);
       context.json(ErrorResponse.builder().message(e.getMessage()).build());
@@ -29,17 +31,17 @@ public class ExceptionHandlerRoutes implements Routers {
     });
 
     server.exception(ApiException.class, (e, context) -> {
-      context.status(HttpStatus.BAD_REQUEST);
+      context.status(HttpStatus.INTERNAL_SERVER_ERROR);
       context.json(ErrorResponse.builder().message(e.getMessage()).build());
     });
 
     server.exception(JsonProcessingException.class, (e, context) -> {
-      context.status(HttpStatus.BAD_REQUEST);
+      context.status(HttpStatus.INTERNAL_SERVER_ERROR);
       context.json(ErrorResponse.builder().message(e.getMessage()).build());
     });
 
     server.exception(SQLException.class, (e, context) -> {
-      context.status(HttpStatus.BAD_REQUEST);
+      context.status(HttpStatus.INTERNAL_SERVER_ERROR);
       context.json(ErrorResponse.builder().message(e.getMessage()).build());
     });
 

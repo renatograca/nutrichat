@@ -23,7 +23,7 @@ public class AuthController implements Controller {
   private final AuthService authService;
   private final UserService userService;
 
-  public void login(Context context) throws UserNotFoundException, InvalidPasswordException, ApiException {
+  public void login(Context context) throws BadRequestException, UserNotFoundException, InvalidPasswordException {
     final var authContext = authContextService.apply(context);
 
     if (authContext.user() == null) {

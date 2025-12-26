@@ -1,8 +1,6 @@
 package unit;
 
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,7 +75,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void testLogin_UserNotFound() throws ApiException {
+  void testLogin_UserNotFound() {
     // Arrange
     final var email = "notfound@example.com";
     final var authContext = AuthContext.builder().user(UserAuthData.builder().email(email).password("password").build()).build();
@@ -90,7 +88,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void testLogin_InvalidPassword() throws ApiException {
+  void testLogin_InvalidPassword() {
     // Arrange
     final var correctPassword = "correctPassword";
     final var wrongPassword = "wrongPassword";
