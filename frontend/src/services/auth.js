@@ -7,7 +7,12 @@ export async function login({ email, password }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     })
-    if (!res.ok) throw new Error('login failed')
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}))
+      const error = new Error(errorData.message || 'login failed')
+      error.status = res.status
+      throw error
+    }
     const data = await res.json()
     if (data?.token) {
       try { 

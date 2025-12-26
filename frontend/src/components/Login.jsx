@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../services/auth'
 
 export default function Login({ onLoginSuccess }) {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -18,6 +20,8 @@ export default function Login({ onLoginSuccess }) {
     } catch (err) {
       if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
         setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
+      } else if (err.status === 404 && err.message === 'User not found') {
+        setShowModal(true)
       } else {
         setError('Falha no login. Verifique credenciais.')
       }
@@ -31,7 +35,7 @@ export default function Login({ onLoginSuccess }) {
       <div className="card shadow-sm p-4" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="card-body">
           <div className="text-center mb-4">
-            <h3 className="text-primary fw-bold">NutriSmart</h3>
+            <h3 className="text-primary fw-bold">NutriChat</h3>
             <p className="text-muted small">Faça login para continuar</p>
           </div>
           <form onSubmit={handleSubmit}>
@@ -77,6 +81,37 @@ export default function Login({ onLoginSuccess }) {
           </form>
         </div>
       </div>
+
+      {/* Modal User Not Found */}
+      {showModal && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold text-primary">Usuário não encontrado</h5>
+                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+              </div>
+              <div className="modal-body py-4 text-center">
+                <p className="mb-0">Este usuário não está cadastrado em nosso sistema.</p>
+                <p className="text-muted small">Deseja criar uma conta agora?</p>
+              </div>
+              <div className="modal-footer border-0 pt-0">
+                <button type="button" className="btn btn-light" onClick={() => setShowModal(false)}>Fechar</button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={() => {
+                    setShowModal(false)
+                    navigate('/register')
+                  }}
+                >
+                  Cadastrar-se
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

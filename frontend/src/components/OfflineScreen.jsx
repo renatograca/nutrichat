@@ -11,7 +11,7 @@ export default function OfflineScreen({ onRetry }) {
           <h2 className="text-dark fw-bold mb-3">Ops! Backend Offline</h2>
           <p className="text-muted mb-4">
             Parece que nosso servidor está descansando um pouco ou sua conexão caiu. 
-            Não conseguimos conectar ao NutriSmart agora.
+            Não conseguimos conectar ao NutriChat agora.
           </p>
           <div className="d-grid gap-2">
             <button 

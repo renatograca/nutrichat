@@ -131,16 +131,16 @@ class ChatRepository {
         return {
           id: r.id.toString(),
           user_id: r.user_id,
-          document_id: r.document_id ? r.document_id.toString() : null,
+          document_id: r.document_id ? r.document_id.toString() : "",
           title: r.title,
           created_at: r.created_at,
           updated_at: r.updated_at,
         };
       }
-      return null;
+      return {};
     } catch (error) {
       logger.error(`Erro ao buscar chat ${chatId}: ${error.message}`);
-      return null;
+      return {};
     } finally {
       client.release();
     }

@@ -73,7 +73,7 @@ export default function Register() {
       <div className="card shadow-sm p-4" style={{ maxWidth: '450px', width: '100%' }}>
         <div className="card-body">
           <div className="text-center mb-4">
-            <h3 className="text-primary fw-bold">NutriSmart</h3>
+            <h3 className="text-primary fw-bold">NutriChat</h3>
             <p className="text-muted small">Crie sua conta</p>
           </div>
           
