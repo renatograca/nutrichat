@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import * as DocumentController from '../controllers/DocumentController.js';
+import * as DocumentController from '../controllers/DocumentController';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -9,3 +9,4 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/', upload.single('file'), DocumentController.ingestDocument);
 
 export default router;
+

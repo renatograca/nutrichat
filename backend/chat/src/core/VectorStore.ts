@@ -1,5 +1,5 @@
-import pool from '../db/pool.js';
-import { logger } from '../utils/logger.js';
+import pool from '../db/pool';
+import { logger } from '../utils/logger';
 
 class VectorStore {
   async _ensureTable() {
@@ -23,14 +23,14 @@ class VectorStore {
     }
   }
 
-  async add(content, metadata, embedding) {
+  async add(content: any, metadata: any, embedding: any) {
     const client = await pool.connect();
     try {
       await client.query(
         'INSERT INTO vector_store (content, metadata, embedding) VALUES ($1, $2, $3)',
         [content, JSON.stringify(metadata), embedding]
       );
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Erro ao adicionar vetor: ${error.message}`);
       throw error;
     } finally {
@@ -38,7 +38,7 @@ class VectorStore {
     }
   }
 
-  async similaritySearch(queryEmbedding, { documentId = null, userId = null, chatId = null, topK = 5 } = {}) {
+  async similaritySearch(queryEmbedding: any, { documentId = null, userId = null, chatId = null, topK = 5 }: any = {}) {
     const client = await pool.connect();
     try {
       let query = `
@@ -46,7 +46,7 @@ class VectorStore {
         FROM vector_store
         WHERE metadata->>'document_id' = $1
       `;
-      const params = [documentId];
+      const params: any[] = [documentId];
 
       if (userId) {
         query += ` AND metadata->>'user_id' = $${params.length + 1}`;
@@ -67,7 +67,7 @@ class VectorStore {
 
       const result = await client.query(query, params);
       return result.rows;
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Erro ao buscar similaridade: ${error.message}`);
       throw error;
     } finally {
@@ -77,3 +77,4 @@ class VectorStore {
 }
 
 export default VectorStore;
+

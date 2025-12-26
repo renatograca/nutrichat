@@ -1,5 +1,5 @@
-import pool from '../db/pool.js';
-import { logger } from '../utils/logger.js';
+import pool from '../db/pool';
+import { logger } from '../utils/logger';
 
 class DocumentRepository {
   constructor() {
@@ -27,7 +27,7 @@ class DocumentRepository {
     }
   }
 
-  async createDocument(userId, fileName) {
+  async createDocument(userId: any, fileName: any) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -35,7 +35,7 @@ class DocumentRepository {
         [userId, fileName]
       );
       return result.rows[0].id.toString();
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Erro ao criar documento: ${error.message}`);
       throw error;
     } finally {
@@ -43,7 +43,7 @@ class DocumentRepository {
     }
   }
 
-  async getDocument(documentId) {
+  async getDocument(documentId: any) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -60,7 +60,7 @@ class DocumentRepository {
         };
       }
       return null;
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Erro ao buscar documento ${documentId}: ${error.message}`);
       return null;
     } finally {
@@ -70,3 +70,4 @@ class DocumentRepository {
 }
 
 export default DocumentRepository;
+

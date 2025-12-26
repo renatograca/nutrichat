@@ -1,4 +1,4 @@
-import GoogleProvider from './GoogleProvider.js';
+import GoogleProvider from './GoogleProvider';
 
 function getAIProvider() {
   const providerName = (process.env.AI_PROVIDER || 'google').toLowerCase();
@@ -19,3 +19,4 @@ function getEmbeddingProvider() {
 }
 
 export { getAIProvider, getEmbeddingProvider };
+
