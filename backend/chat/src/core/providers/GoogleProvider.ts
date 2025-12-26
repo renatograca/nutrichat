@@ -14,15 +14,12 @@ class GoogleProvider extends BaseAIProvider {
     }
     this.client = new GoogleGenerativeAI(apiKey);
     this.chatModel = this.client.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-    this.embeddingModel = 'models/embedding-001';
+    this.embeddingModel = this.client.getGenerativeModel({ model: 'gemini-embedding-001' });
   }
 
   async embedText(text: any) {
     try {
-      const result = await (this as any).client.embedContent({
-        model: (this as any).embeddingModel,
-        content: text,
-      });
+      const result = await (this as any).embeddingModel.embedContent(text);
       return result.embedding.values;
     } catch (error: any) {
       throw new Error(`Erro ao gerar embedding: ${error.message}`);

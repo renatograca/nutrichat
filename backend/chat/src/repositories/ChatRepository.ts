@@ -10,37 +10,51 @@ class ChatRepository {
     const client = await pool.connect();
     try {
       // Criar extensão pgcrypto se necessária
-      await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+      try {
+        await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
 
       // Tabela de Chats
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS chats (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id TEXT NOT NULL,
-          document_id UUID REFERENCES documents(id),
-          title TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
+      try {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS chats (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id TEXT NOT NULL,
+            document_id UUID REFERENCES documents(id),
+            title TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
 
       // Índice para document_id
-      await client.query(
-        'CREATE INDEX IF NOT EXISTS idx_chats_document_id ON chats(document_id);'
-      );
+      try {
+        await client.query(
+          'CREATE INDEX IF NOT EXISTS idx_chats_document_id ON chats(document_id);'
+        );
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
 
       // Tabela de Mensagens
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS chat_message (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
-          role TEXT NOT NULL,
-          content TEXT NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
-      await client.query('COMMIT;');
+      try {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS chat_message (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
     } catch (error) {
       logger.error(`Erro ao garantir tabelas: ${error.message}`);
       throw error;

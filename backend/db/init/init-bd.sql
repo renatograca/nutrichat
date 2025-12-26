@@ -103,6 +103,8 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     full_name varchar(100) NOT NULL,
     email varchar(100) UNIQUE NOT NULL,
+    date_of_birth date,
+    phone varchar(15),
     password_hash varchar(255) NOT NULL,
     account_status varchar(20) DEFAULT 'active',
     created_at timestamp DEFAULT NOW(),
