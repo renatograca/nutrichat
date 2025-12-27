@@ -28,6 +28,21 @@ export default function Register() {
       setFormData(prev => ({ ...prev, [id]: v }))
       return
     }
+    if (id === 'phone') {
+      // Máscara para (00) 00000-0000
+      let v = value.replace(/\D/g, '').slice(0, 11)
+      if (v.length > 10) {
+        v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
+      } else if (v.length > 6) {
+        v = `(${v.slice(0, 2)}) ${v.slice(2, 6)}-${v.slice(6)}`
+      } else if (v.length > 2) {
+        v = `(${v.slice(0, 2)}) ${v.slice(2)}`
+      } else if (v.length > 0) {
+        v = `(${v}`
+      }
+      setFormData(prev => ({ ...prev, [id]: v }))
+      return
+    }
     setFormData(prev => ({ ...prev, [id]: value }))
   }
 
@@ -47,6 +62,13 @@ export default function Register() {
     // Validar formato DD/MM/AAAA
     if (formData.dateOfBirth.length < 10) {
       setError('Data de nascimento inválida. Use DD/MM/AAAA.')
+      setLoading(false)
+      return
+    }
+
+    // Validar formato (00) 00000-0000 ou (00) 0000-0000
+    if (formData.phone.length < 14) {
+      setError('Telefone inválido. Use (00) 00000-0000.')
       setLoading(false)
       return
     }
@@ -166,7 +188,7 @@ export default function Register() {
                     id="phone"
                     value={formData.phone} 
                     onChange={handleChange} 
-                    placeholder="Ex: 75982389131"
+                    placeholder="(00) 00000-0000"
                     required 
                   />
                 </div>
