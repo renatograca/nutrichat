@@ -3,7 +3,9 @@ import { logger } from '../utils/logger';
 
 class ChatRepository {
   constructor() {
-    this._ensureTables();
+    this._ensureTables().catch(err => {
+      logger.error(`Falha crítica na inicialização do ChatRepository: ${err.message}`);
+    });
   }
 
   async _ensureTables() {

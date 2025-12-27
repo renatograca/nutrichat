@@ -9,7 +9,28 @@ import { logger } from './utils/logger';
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'nutrichat-frontend.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (como mobile apps ou curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+app.options('*', cors()); // Responde explicitamente a todas as requisições OPTIONS
 app.use(express.json());
 app.use(logRequestsMiddleware);
 

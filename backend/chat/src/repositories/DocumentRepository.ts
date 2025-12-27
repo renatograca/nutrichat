@@ -3,7 +3,9 @@ import { logger } from '../utils/logger';
 
 class DocumentRepository {
   constructor() {
-    this._ensureTable();
+    this._ensureTable().catch(err => {
+      logger.error(`Falha crítica na inicialização do DocumentRepository: ${err.message}`);
+    });
   }
 
   async _ensureTable() {
