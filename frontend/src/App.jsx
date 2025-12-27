@@ -1,21 +1,77 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import Header from './components/Header'
 import ChatMenu from './components/ChatMenu'
 import ChatView from './pages/ChatView'
 import EmptyState from './components/EmptyState'
-import { createChat } from './services/chatApi'
+import { createChat, getChats } from './services/chatApi'
 
 export default function App({ onLogout }) {
-  const [selectedChatId, setSelectedChatId] = useState(null)
+  const { chatId } = useParams()
+  const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [loadingInitial, setLoadingInitial] = useState(true)
+  const [chats, setChats] = useState([])
+  const [loadingChats, setLoadingChats] = useState(false)
+
+  const selectedChatId = chatId || null
+
+  const setSelectedChatId = (id) => {
+    if (id) {
+      navigate(`/chat/${id}`)
+    } else {
+      navigate('/')
+    }
+  }
+
+  const loadChats = async () => {
+    try {
+      setLoadingChats(true)
+      const data = await getChats()
+      setChats(data || [])
+      return data
+    } catch (err) {
+      console.error('Erro ao carregar conversas:', err)
+      return []
+    } finally {
+      setLoadingChats(false)
+    }
+  }
+
+  useEffect(() => {
+    const init = async () => {
+      const data = await loadChats()
+      // Se não houver chatId na URL, tenta carregar o último
+      if (!chatId && data && data.length > 0) {
+        const sorted = [...data].sort((a, b) => 
+          new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)
+        )
+        setSelectedChatId(sorted[0].id)
+      }
+      setLoadingInitial(false)
+    }
+    init()
+  }, [])
 
   const handleNewChat = async () => {
     try {
       const newChat = await createChat()
+      await loadChats()
       setSelectedChatId(newChat.id)
+      setIsMenuOpen(false)
     } catch (err) {
       alert('Erro ao criar novo chat.')
     }
+  }
+
+  if (loadingInitial) {
+    return (
+      <div className="d-flex align-items-center justify-content-center h-100 bg-light">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Carregando...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -30,6 +86,9 @@ export default function App({ onLogout }) {
         onClose={() => setIsMenuOpen(false)} 
         onSelectChat={setSelectedChatId}
         currentChatId={selectedChatId}
+        chats={chats}
+        loading={loadingChats}
+        onRefreshChats={loadChats}
       />
 
       <main className="flex-grow-1 overflow-hidden position-relative">
@@ -40,6 +99,7 @@ export default function App({ onLogout }) {
                 <ChatView 
                   chatId={selectedChatId} 
                   onBack={() => setSelectedChatId(null)} 
+                  onTitleUpdate={loadChats}
                 />
               ) : (
                 <EmptyState 

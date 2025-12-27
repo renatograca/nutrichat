@@ -98,6 +98,7 @@ export default function AuthGate({ children }) {
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<Navigate to="/" replace />} />
           <Route path="/" element={React.cloneElement(children, { onLogout: handleLogout })} />
+          <Route path="/chat/:chatId" element={React.cloneElement(children, { onLogout: handleLogout })} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
