@@ -19,25 +19,37 @@ app.use(logRequestsMiddleware);
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Se não houver origin (ex: chamadas diretas), permite
     if (!origin) return callback(null, true);
-    
-    const isAllowed = allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production';
-    
+
+    const isVercelPreview = origin.includes('vercel.app') && origin.includes('nutrichat');
+    const isAllowed = allowedOrigins.includes(origin) || isVercelPreview || process.env.NODE_ENV !== 'production';
+
     if (isAllowed) {
       callback(null, true);
     } else {
-      logger.warn(`CORS bloqueado para origem: ${origin}`);
-      callback(null, false);
+      console.warn(`CORS Bloqueado para: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   credentials: true,
   optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.options('*', (req, res) => {
   res.sendStatus(200);
 });
