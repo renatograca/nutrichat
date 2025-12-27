@@ -15,7 +15,9 @@ const allowedOrigins = [
   'http://localhost:5173',
 ];
 
-app.use(cors({
+app.use(logRequestsMiddleware);
+
+const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // Se não houver origin (ex: chamadas diretas), permite
     if (!origin) return callback(null, true);
@@ -25,19 +27,20 @@ app.use(cors({
     if (isAllowed) {
       callback(null, true);
     } else {
-      // Em vez de Error, passamos null no erro e false no origin para o CORS negar sem explodir 500
       logger.warn(`CORS bloqueado para origem: ${origin}`);
       callback(null, false);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'Origin'],
   credentials: true,
-  optionsSuccessStatus: 200 // Alguns navegadores antigos (IE11) precisam disso
-}));
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
-app.use(logRequestsMiddleware);
 
 // Health check
 app.get('/health', (req: any, res: any) => {
