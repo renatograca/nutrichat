@@ -7,7 +7,11 @@ const chatRepository = new ChatRepository();
 export const createChat = async (req: any, res: any) => {
   try {
     const { user_id, title } = req.body;
-    const userId = user_id || 'default_user';
+    const userId = user_id ? Number(user_id) : null;
+
+    if (userId === null || isNaN(userId)) {
+      return res.status(400).json({ detail: 'user_id inválido' });
+    }
 
     const chatId = await chatRepository.createChat(userId, title || null);
     const chat = await chatRepository.getChat(chatId);
@@ -23,13 +27,14 @@ export const associateDocument = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { document_id, user_id } = req.body;
+    const userId = Number(user_id);
 
     if (!document_id) {
       return res.status(400).json({ detail: 'documentId é obrigatório' });
     }
 
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== user_id) {
+    if (!chat || chat.user_id !== userId) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -45,9 +50,10 @@ export const updateChat = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { title, user_id } = req.body;
+    const userId = Number(user_id);
 
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== user_id) {
+    if (!chat || chat.user_id !== userId) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -70,7 +76,8 @@ export const listChats = async (req: any, res: any) => {
       return res.status(404).json({ detail: 'user_id is empty' });
     }
 
-    const chats = await chatRepository.getUserChats(user_id);
+    const userId = Number(user_id);
+    const chats = await chatRepository.getUserChats(userId);
     res.json(chats);
   } catch (error: any) {
     logger.error(`Erro ao listar chats: ${error.message}`);
@@ -87,9 +94,10 @@ export const getChat = async (req: any, res: any) => {
       return res.status(400).json({ detail: 'user_id é obrigatório' });
     }
 
+    const userId = Number(user_id);
     const chat = await chatRepository.getChat(chatId);
-    if (chat.user_id !== +user_id) {
-      logger.error(`Chat não encontrado para o usuário ${user_id}, chatId: ${chatId}`);
+    if (!chat || chat.user_id !== userId) {
+      logger.error(`Chat não encontrado para o usuário ${userId}, chatId: ${chatId}`);
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -109,8 +117,9 @@ export const getChatMessages = async (req: any, res: any) => {
       return res.status(400).json({ detail: 'user_id é obrigatório' });
     }
 
+    const userId = Number(user_id);
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== user_id) {
+    if (!chat || chat.user_id !== userId) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -126,9 +135,10 @@ export const sendMessage = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { message, user_id } = req.body;
+    const userId = Number(user_id);
 
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== user_id) {
+    if (!chat || chat.user_id !== userId) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -143,7 +153,7 @@ export const sendMessage = async (req: any, res: any) => {
     await chatRepository.addMessage(chatId, 'USER', message);
 
     // 2. Obter resposta do RAG
-    const resposta = await askQuestion(message, user_id, chatId);
+    const resposta = await askQuestion(message, userId, chatId);
 
     // 3. Salvar mensagem do assistente
     await chatRepository.addMessage(chatId, 'ASSISTANT', resposta);
@@ -151,7 +161,7 @@ export const sendMessage = async (req: any, res: any) => {
     res.json({
       pergunta: message,
       text: resposta,
-      user_id,
+      user_id: userId,
       role: 'ASSISTANT',
       created_at: new Date().toISOString(),
     });
@@ -170,8 +180,9 @@ export const deleteChat = async (req: any, res: any) => {
       return res.status(400).json({ detail: 'user_id é obrigatório' });
     }
 
+    const userId = Number(user_id);
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== user_id) {
+    if (!chat || chat.user_id !== userId) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 

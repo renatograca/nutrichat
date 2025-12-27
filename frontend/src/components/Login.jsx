@@ -87,9 +87,9 @@ export default function Login({ onLoginSuccess }) {
         <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 shadow">
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold text-primary">Usuário não encontrado</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+              <div className="modal-header border-0 pb-0 justify-content-center position-relative">
+                <h5 className="modal-title fw-bold text-primary w-100 text-center">Usuário não encontrado</h5>
+                <button type="button" className="btn-close position-absolute end-0 me-3" onClick={() => setShowModal(false)}></button>
               </div>
               <div className="modal-body py-4 text-center">
                 <p className="mb-0">Este usuário não está cadastrado em nosso sistema.</p>

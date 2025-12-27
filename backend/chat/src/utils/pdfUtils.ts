@@ -2,7 +2,8 @@ import { getDocument } from 'pdfjs-dist';
 
 async function extractTextFromPdf(fileBytes: any) {
   try {
-    const pdf = await getDocument({ data: fileBytes }).promise;
+    const data = new Uint8Array(fileBytes);
+    const pdf = await getDocument({ data }).promise;
     let text = '';
 
     for (let i = 1; i <= pdf.numPages; i++) {

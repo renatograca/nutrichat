@@ -6,7 +6,7 @@ const embeddingProvider = getEmbeddingProvider();
 const aiProvider = getAIProvider();
 const chatRepository = new ChatRepository();
 
-async function askQuestion(question: any, userId: any, chatId: any = null, topK: any = 5) {
+async function askQuestion(question: any, userId: number, chatId: any = null, topK: any = 5) {
   try {
     // 1. Obter embedding da pergunta
     const queryEmbedding = await (embeddingProvider as any).embedText(question);
@@ -15,10 +15,10 @@ async function askQuestion(question: any, userId: any, chatId: any = null, topK:
     let documentId: any = null;
     if (chatId) {
       const chat = await chatRepository.getChat(chatId);
-      if (!chat || (chat as any).user_id !== userId) {
+      if (!chat || chat.user_id !== userId) {
         throw new Error('Chat não encontrado ou não pertence ao usuário');
       }
-      documentId = (chat as any).document_id;
+      documentId = chat.document_id;
     }
 
     if (!documentId) {

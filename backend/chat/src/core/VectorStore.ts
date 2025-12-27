@@ -11,7 +11,7 @@ class VectorStore {
           id SERIAL PRIMARY KEY,
           content TEXT,
           metadata JSONB,
-          embedding vector(768)
+          embedding vector(3072)
         );
       `);
       await client.query('COMMIT;');
@@ -28,7 +28,7 @@ class VectorStore {
     try {
       await client.query(
         'INSERT INTO vector_store (content, metadata, embedding) VALUES ($1, $2, $3)',
-        [content, JSON.stringify(metadata), embedding]
+        [content, JSON.stringify(metadata), JSON.stringify(embedding)]
       );
     } catch (error: any) {
       logger.error(`Erro ao adicionar vetor: ${error.message}`);
@@ -50,7 +50,7 @@ class VectorStore {
 
       if (userId) {
         query += ` AND metadata->>'user_id' = $${params.length + 1}`;
-        params.push(userId);
+        params.push(String(userId));
       }
 
       if (chatId) {

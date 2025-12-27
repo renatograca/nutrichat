@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 const ChatCreateSchema = z.object({
-  user_id: z.string(),
+  user_id: z.number(),
   title: z.string().optional(),
 });
 
 const ChatMessageCreateSchema = z.object({
   message: z.string(),
-  user_id: z.string(),
+  user_id: z.number(),
 });
 
 const ChatMessageResponseSchema = z.object({
@@ -19,7 +19,7 @@ const ChatMessageResponseSchema = z.object({
 
 const ChatResponseSchema = z.object({
   id: z.string().uuid(),
-  user_id: z.string(),
+  user_id: z.number(),
   document_id: z.string().uuid().nullable(),
   title: z.string().nullable(),
   created_at: z.date(),

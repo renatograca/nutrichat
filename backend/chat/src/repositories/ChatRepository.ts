@@ -10,37 +10,51 @@ class ChatRepository {
     const client = await pool.connect();
     try {
       // Criar extensão pgcrypto se necessária
-      await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+      try {
+        await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
 
       // Tabela de Chats
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS chats (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id TEXT NOT NULL,
-          document_id UUID REFERENCES documents(id),
-          title TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
+      try {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS chats (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id INTEGER NOT NULL,
+            document_id UUID REFERENCES documents(id),
+            title TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
 
       // Índice para document_id
-      await client.query(
-        'CREATE INDEX IF NOT EXISTS idx_chats_document_id ON chats(document_id);'
-      );
+      try {
+        await client.query(
+          'CREATE INDEX IF NOT EXISTS idx_chats_document_id ON chats(document_id);'
+        );
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
 
       // Tabela de Mensagens
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS chat_message (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
-          role TEXT NOT NULL,
-          content TEXT NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
-      await client.query('COMMIT;');
+      try {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS chat_message (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+      } catch (e: any) {
+        if (e.code !== '23505') throw e;
+      }
     } catch (error) {
       logger.error(`Erro ao garantir tabelas: ${error.message}`);
       throw error;
@@ -49,7 +63,7 @@ class ChatRepository {
     }
   }
 
-  async createChat(userId: any, title: any = null) {
+  async createChat(userId: number, title: any = null) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -95,7 +109,7 @@ class ChatRepository {
     }
   }
 
-  async getUserChats(userId: any) {
+  async getUserChats(userId: number) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -104,7 +118,7 @@ class ChatRepository {
       );
       return result.rows.map((r: any) => ({
         id: r.id.toString(),
-        user_id: r.user_id,
+        user_id: Number(r.user_id),
         document_id: r.document_id ? r.document_id.toString() : null,
         title: r.title,
         created_at: r.created_at,
@@ -129,17 +143,17 @@ class ChatRepository {
       if (r) {
         return {
           id: r.id.toString(),
-          user_id: r.user_id,
+          user_id: Number(r.user_id),
           document_id: r.document_id ? r.document_id.toString() : "",
           title: r.title,
           created_at: r.created_at,
           updated_at: r.updated_at,
         };
       }
-      return {} as any;
+      return null;
     } catch (error: any) {
       logger.error(`Erro ao buscar chat ${chatId}: ${error.message}`);
-      return {} as any;
+      return null;
     } finally {
       client.release();
     }
