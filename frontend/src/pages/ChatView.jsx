@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { getMessages, sendMessage, getChat } from '../services/chatApi'
+import { getMessages, sendMessage, getChat, updateChatTitle } from '../services/chatApi'
 import MessageBubble from '../components/MessageBubble'
 import UploadDocumentButton from '../components/UploadDocumentButton'
 
@@ -10,6 +10,8 @@ export default function ChatView({ chatId, onBack }) {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState(null)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [tempTitle, setTempTitle] = useState('')
   
   const scrollRef = useRef(null)
 
@@ -49,6 +51,21 @@ export default function ChatView({ chatId, onBack }) {
       setError('Erro ao carregar dados do chat.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleUpdateTitle = async () => {
+    if (!tempTitle.trim() || tempTitle === chatInfo?.title) {
+      setIsEditingTitle(false)
+      return
+    }
+
+    try {
+      const updated = await updateChatTitle(chatId, tempTitle)
+      setChatInfo(prev => ({ ...prev, title: updated.title }))
+      setIsEditingTitle(false)
+    } catch (err) {
+      alert('Erro ao atualizar título.')
     }
   }
 
@@ -114,6 +131,46 @@ export default function ChatView({ chatId, onBack }) {
 
   return (
     <div className="d-flex flex-column h-100 bg-white">
+      {/* Header do Chat com Título Editável */}
+      <div className="p-2 border-bottom d-flex align-items-center bg-white">
+        <button className="btn btn-link text-dark p-2 me-2 d-md-none" onClick={onBack}>
+          <i className="bi bi-chevron-left fs-5"></i>
+        </button>
+        
+        <div className="flex-grow-1 overflow-hidden">
+          {isEditingTitle ? (
+            <div className="input-group input-group-sm">
+              <input
+                type="text"
+                className="form-control"
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={handleUpdateTitle}
+                onKeyDown={(e) => e.key === 'Enter' && handleUpdateTitle()}
+                autoFocus
+              />
+              <button className="btn btn-outline-primary" onClick={handleUpdateTitle}>
+                <i className="bi bi-check-lg"></i>
+              </button>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center">
+              <h6 
+                className="mb-0 text-truncate fw-bold cursor-pointer" 
+                onClick={() => {
+                  setTempTitle(chatInfo?.title || `Conversa #${chatId.slice(0, 5)}`)
+                  setIsEditingTitle(true)
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                {chatInfo?.title || `Conversa #${chatId.slice(0, 5)}`}
+                <i className="bi bi-pencil-square ms-2 small text-muted"></i>
+              </h6>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Design mais limpo e focado em conversa */}
       <div 
         ref={scrollRef}
