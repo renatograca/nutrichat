@@ -17,20 +17,25 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (como mobile apps ou curl)
+    // Se não houver origin (ex: chamadas diretas), permite
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+    const isAllowed = allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production';
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Em vez de Error, passamos null no erro e false no origin para o CORS negar sem explodir 500
+      logger.warn(`CORS bloqueado para origem: ${origin}`);
+      callback(null, false);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200 // Alguns navegadores antigos (IE11) precisam disso
 }));
-app.options('*', cors()); // Responde explicitamente a todas as requisições OPTIONS
+
 app.use(express.json());
 app.use(logRequestsMiddleware);
 
