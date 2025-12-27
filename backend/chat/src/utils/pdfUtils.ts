@@ -1,8 +1,17 @@
-import * as pdfjs from 'pdfjs-dist';
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 async function extractTextFromPdf(fileBytes: any) {
   try {
     const data = new Uint8Array(fileBytes);
+
+    // No Node.js com a versão legacy, podemos carregar o worker manualmente
+    // @ts-ignore
+    if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+       // @ts-ignore
+       const worker = await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
+       // @ts-ignore
+       pdfjs.GlobalWorkerOptions.workerSrc = worker.default || worker;
+    }
 
     const loadingTask = pdfjs.getDocument({
       data,
