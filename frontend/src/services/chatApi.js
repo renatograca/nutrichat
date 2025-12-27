@@ -46,8 +46,6 @@ export async function updateChatTitle(chatId, title) {
     body: JSON.stringify({ user_id: userId, title })
   })
   if (!res.ok) throw new Error('Failed to update chat title')
-  const data = await res.json()
-  console.log({ data })
   return await res.json()
 }
 

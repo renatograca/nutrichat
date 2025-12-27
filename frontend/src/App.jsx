@@ -67,6 +67,17 @@ export default function App({ onLogout }) {
     }
   }
 
+  const handleTitleUpdate = (newTitle) => {
+    // Atualização otimista/local para refletir no menu imediatamente
+    setChats(prevChats => 
+      prevChats.map(chat => 
+        chat.id === selectedChatId ? { ...chat, title: newTitle } : chat
+      )
+    )
+    // Recarrega do servidor em background para garantir consistência
+    loadChats()
+  }
+
   if (loadingInitial) {
     return (
       <div className="d-flex align-items-center justify-content-center h-100 bg-light">
@@ -102,7 +113,7 @@ export default function App({ onLogout }) {
                 <ChatView 
                   chatId={selectedChatId} 
                   onBack={() => setSelectedChatId(null)} 
-                  onTitleUpdate={loadChats}
+                  onTitleUpdate={handleTitleUpdate}
                 />
               ) : (
                 <EmptyState 

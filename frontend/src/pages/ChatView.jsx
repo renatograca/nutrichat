@@ -63,10 +63,10 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
     }
 
     try {
-      const updated = await updateChatTitle(chatId, tempTitle)
-      setChatInfo(prev => ({ ...prev, title: updated }))
+      await updateChatTitle(chatId, tempTitle)
+      setChatInfo(prev => ({ ...prev, title: tempTitle }))
       setIsEditingTitle(false)
-      if (onTitleUpdate) onTitleUpdate()
+      if (onTitleUpdate) onTitleUpdate(tempTitle)
     } catch (err) {
       setErrorMessage('Não foi possível atualizar o título da conversa. Tente novamente.')
       setShowErrorModal(true)
