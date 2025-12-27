@@ -1,9 +1,19 @@
-import { getDocument } from 'pdfjs-dist';
+import * as pdfjs from 'pdfjs-dist';
+
+const PDFJS_VERSION = '4.1.292';
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.mjs`;
 
 async function extractTextFromPdf(fileBytes: any) {
   try {
     const data = new Uint8Array(fileBytes);
-    const pdf = await getDocument({ data }).promise;
+    const loadingTask = pdfjs.getDocument({
+      data,
+      useSystemFonts: true,
+      disableFontFace: true,
+      isEvalSupported: false
+    });
+    
+    const pdf = await loadingTask.promise;
     let text = '';
 
     for (let i = 1; i <= pdf.numPages; i++) {
