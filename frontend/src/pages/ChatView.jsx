@@ -3,7 +3,7 @@ import { getMessages, sendMessage, getChat, updateChatTitle } from '../services/
 import MessageBubble from '../components/MessageBubble'
 import UploadDocumentButton from '../components/UploadDocumentButton'
 
-export default function ChatView({ chatId, onBack }) {
+export default function ChatView({ chatId, onBack, onTitleUpdate }) {
   const [messages, setMessages] = useState([])
   const [chatInfo, setChatInfo] = useState(null)
   const [inputText, setInputText] = useState('')
@@ -64,6 +64,7 @@ export default function ChatView({ chatId, onBack }) {
       const updated = await updateChatTitle(chatId, tempTitle)
       setChatInfo(prev => ({ ...prev, title: updated.title }))
       setIsEditingTitle(false)
+      if (onTitleUpdate) onTitleUpdate()
     } catch (err) {
       alert('Erro ao atualizar título.')
     }
@@ -187,7 +188,6 @@ export default function ChatView({ chatId, onBack }) {
             <p>Plano alimentar carregado! Pergunte qualquer coisa sobre sua dieta.</p>
           </div>
         ) : (
-          console.log('Renderizando mensagens:', messages),
           messages.map((msg, idx) => (
             <MessageBubble key={msg.id || idx} message={msg} />
           ))

@@ -1,34 +1,15 @@
-import React, { useState, useEffect } from 'react'
-import { getChats, createChat, deleteChat } from '../services/chatApi'
+import React, { useState } from 'react'
+import { createChat, deleteChat } from '../services/chatApi'
 
-export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId }) {
-  const [chats, setChats] = useState([])
-  const [loading, setLoading] = useState(false)
+export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId, chats, loading, onRefreshChats }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [chatToDelete, setChatToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => {
-    if (isOpen) {
-      loadChats()
-    }
-  }, [isOpen])
-
-  const loadChats = async () => {
-    try {
-      setLoading(true)
-      const data = await getChats()
-      setChats(data)
-    } catch (err) {
-      console.error('Erro ao carregar conversas:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleNewChat = async () => {
     try {
       const newChat = await createChat()
+      if (onRefreshChats) await onRefreshChats()
       onSelectChat(newChat.id)
       onClose()
     } catch (err) {
@@ -48,7 +29,7 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId 
     try {
       setDeleting(true)
       await deleteChat(chatToDelete)
-      setChats(chats.filter(c => c.id !== chatToDelete))
+      if (onRefreshChats) await onRefreshChats()
       if (currentChatId === chatToDelete) {
         onSelectChat(null)
       }
