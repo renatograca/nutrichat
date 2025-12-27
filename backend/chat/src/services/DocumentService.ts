@@ -36,7 +36,7 @@ function chunkText(text: any, maxTokens: any = 500) {
   return chunks;
 }
 
-async function ingestPdf(fileBytes: any, filename: any, userId: any, chatId: any = null) {
+async function ingestPdf(fileBytes: any, filename: any, userId: number, chatId: any = null) {
   try {
     // 1. Ler o PDF e dividir em chunks
     const text = await extractTextFromPdf(fileBytes);

@@ -21,7 +21,7 @@ class ChatRepository {
         await client.query(`
           CREATE TABLE IF NOT EXISTS chats (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
             document_id UUID REFERENCES documents(id),
             title TEXT,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -63,7 +63,7 @@ class ChatRepository {
     }
   }
 
-  async createChat(userId: any, title: any = null) {
+  async createChat(userId: number, title: any = null) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -109,7 +109,7 @@ class ChatRepository {
     }
   }
 
-  async getUserChats(userId: any) {
+  async getUserChats(userId: number) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -118,7 +118,7 @@ class ChatRepository {
       );
       return result.rows.map((r: any) => ({
         id: r.id.toString(),
-        user_id: r.user_id,
+        user_id: Number(r.user_id),
         document_id: r.document_id ? r.document_id.toString() : null,
         title: r.title,
         created_at: r.created_at,
@@ -143,17 +143,17 @@ class ChatRepository {
       if (r) {
         return {
           id: r.id.toString(),
-          user_id: r.user_id,
+          user_id: Number(r.user_id),
           document_id: r.document_id ? r.document_id.toString() : "",
           title: r.title,
           created_at: r.created_at,
           updated_at: r.updated_at,
         };
       }
-      return {} as any;
+      return null;
     } catch (error: any) {
       logger.error(`Erro ao buscar chat ${chatId}: ${error.message}`);
-      return {} as any;
+      return null;
     } finally {
       client.release();
     }

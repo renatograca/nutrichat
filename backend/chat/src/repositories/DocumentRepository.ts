@@ -19,7 +19,7 @@ class DocumentRepository {
         await client.query(`
           CREATE TABLE IF NOT EXISTS documents (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
             filename TEXT,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
@@ -35,7 +35,7 @@ class DocumentRepository {
     }
   }
 
-  async createDocument(userId: any, fileName: any) {
+  async createDocument(userId: number, fileName: any) {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -62,7 +62,7 @@ class DocumentRepository {
       if (r) {
         return {
           id: r.id.toString(),
-          user_id: r.user_id,
+          user_id: Number(r.user_id),
           filename: r.filename,
           created_at: r.created_at,
         };

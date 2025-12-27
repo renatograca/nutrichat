@@ -50,7 +50,7 @@ class VectorStore {
 
       if (userId) {
         query += ` AND metadata->>'user_id' = $${params.length + 1}`;
-        params.push(userId);
+        params.push(String(userId));
       }
 
       if (chatId) {
