@@ -5,7 +5,6 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App'
 import AuthGate from './AuthGate'
 import './styles/main.css'
-import { register as registerServiceWorker } from './registerServiceWorker'
 
 const root = createRoot(document.getElementById('root'))
 root.render(
@@ -15,6 +14,3 @@ root.render(
     </AuthGate>
   </BrowserRouter>
 )
-
-// registrar service worker apenas em produção
-registerServiceWorker()
