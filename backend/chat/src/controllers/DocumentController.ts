@@ -1,6 +1,6 @@
-import { ingestPdf } from '../services/DocumentService';
-import ChatRepository from '../repositories/ChatRepository';
-import { logger } from '../utils/logger';
+import { ingestPdf } from '../services/DocumentService.js';
+import ChatRepository from '../repositories/ChatRepository.js';
+import { logger } from '../utils/logger.js';
 
 const chatRepository = new ChatRepository();
 

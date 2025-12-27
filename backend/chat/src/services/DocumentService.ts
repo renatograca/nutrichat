@@ -1,7 +1,7 @@
-import { extractTextFromPdf } from '../utils/pdfUtils';
-import VectorStore from '../core/VectorStore';
-import DocumentRepository from '../repositories/DocumentRepository';
-import { getEmbeddingProvider } from '../core/providers/providerFactory';
+import { extractTextFromPdf } from '../utils/pdfUtils.js';
+import VectorStore from '../core/VectorStore.js';
+import DocumentRepository from '../repositories/DocumentRepository.js';
+import { getEmbeddingProvider } from '../core/providers/providerFactory.js';
 
 const embeddingProvider = getEmbeddingProvider();
 const documentRepository = new DocumentRepository();

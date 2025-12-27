@@ -1,4 +1,4 @@
-import GoogleProvider from './GoogleProvider';
+import GoogleProvider from './GoogleProvider.js';
 
 function getAIProvider() {
   const providerName = (process.env.AI_PROVIDER || 'google').toLowerCase();

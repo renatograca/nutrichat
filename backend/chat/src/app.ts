@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import { PORT } from './config/config';
-import chatRoutes from './routes/chatRoutes';
-import documentRoutes from './routes/documentRoutes';
-import { logRequestsMiddleware } from './middlewares/logMiddleware';
-import { logger } from './utils/logger';
+import { PORT } from './config/config.js';
+import chatRoutes from './routes/chatRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
+import { logRequestsMiddleware } from './middlewares/logMiddleware.js';
+import { logger } from './utils/logger.js';
 
 const app = express();
 

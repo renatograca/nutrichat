@@ -1,6 +1,6 @@
-import ChatRepository from '../repositories/ChatRepository';
-import { askQuestion } from '../services/ChatService';
-import { logger } from '../utils/logger';
+import ChatRepository from '../repositories/ChatRepository.js';
+import { askQuestion } from '../services/ChatService.js';
+import { logger } from '../utils/logger.js';
 
 const chatRepository = new ChatRepository();
 

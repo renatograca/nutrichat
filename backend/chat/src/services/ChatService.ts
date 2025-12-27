@@ -1,6 +1,6 @@
-import VectorStore from '../core/VectorStore';
-import { getAIProvider, getEmbeddingProvider } from '../core/providers/providerFactory';
-import ChatRepository from '../repositories/ChatRepository';
+import VectorStore from '../core/VectorStore.js';
+import { getAIProvider, getEmbeddingProvider } from '../core/providers/providerFactory.js';
+import ChatRepository from '../repositories/ChatRepository.js';
 
 const embeddingProvider = getEmbeddingProvider();
 const aiProvider = getAIProvider();

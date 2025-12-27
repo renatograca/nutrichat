@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import BaseAIProvider from './BaseAIProvider';
+import BaseAIProvider from './BaseAIProvider.js';
 
 class GoogleProvider extends BaseAIProvider {
   client: any;

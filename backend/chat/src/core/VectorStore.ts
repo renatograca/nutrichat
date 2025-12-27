@@ -1,5 +1,5 @@
-import pool from '../db/pool';
-import { logger } from '../utils/logger';
+import pool from '../db/pool.js';
+import { logger } from '../utils/logger.js';
 
 class VectorStore {
   async _ensureTable() {

@@ -1,4 +1,4 @@
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.js';
 
 const logRequestsMiddleware = (req: any, res: any, next: any) => {
   logger.info(`📥 ${req.method} ${req.originalUrl} - Origin: ${req.get('origin') || 'no-origin'}`);
