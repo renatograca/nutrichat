@@ -10,7 +10,7 @@ const app = express();
 
 // Middleware
 const allowedOrigins = [
-  'nutrichat-frontend.vercel.app',
+  'https://nutrichat-ten.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
 ];
