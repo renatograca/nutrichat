@@ -3,6 +3,8 @@ import { createChat, deleteChat } from '../services/chatApi'
 
 export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId, chats, loading, onRefreshChats }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [chatToDelete, setChatToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -13,7 +15,8 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId,
       onSelectChat(newChat.id)
       onClose()
     } catch (err) {
-      alert('Erro ao criar novo chat.')
+      setErrorMessage('Erro ao criar novo chat. Tente novamente.')
+      setShowErrorModal(true)
     }
   }
 
@@ -36,7 +39,8 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId,
       setShowDeleteModal(false)
       setChatToDelete(null)
     } catch (err) {
-      alert('Erro ao apagar chat.')
+      setErrorMessage('Erro ao apagar chat. Verifique sua conexão.')
+      setShowErrorModal(true)
     } finally {
       setDeleting(false)
     }
@@ -156,6 +160,38 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId,
                       Apagando...
                     </>
                   ) : 'Apagar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div 
+          className="fixed-top w-100 h-100 d-flex align-items-center justify-content-center px-3"
+          style={{ zIndex: 1100 }}
+        >
+          <div 
+            className="position-absolute w-100 h-100 bg-dark opacity-50"
+            onClick={() => setShowErrorModal(false)}
+          ></div>
+          <div className="card border-0 shadow-lg position-relative" style={{ maxWidth: '400px', width: '100%' }}>
+            <div className="card-body p-4 text-center">
+              <div className="mb-3">
+                <i className="bi bi-exclamation-circle text-danger fs-1"></i>
+              </div>
+              <h5 className="card-title fw-bold mb-2">Ops! Ocorreu um erro</h5>
+              <p className="card-text text-muted mb-4">
+                {errorMessage}
+              </p>
+              <div className="d-flex justify-content-center">
+                <button 
+                  className="btn btn-primary rounded-pill px-5"
+                  onClick={() => setShowErrorModal(false)}
+                >
+                  Entendido
                 </button>
               </div>
             </div>

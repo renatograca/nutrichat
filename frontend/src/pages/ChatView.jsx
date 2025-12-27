@@ -12,6 +12,8 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
   const [error, setError] = useState(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [tempTitle, setTempTitle] = useState('')
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   
   const scrollRef = useRef(null)
 
@@ -62,11 +64,12 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
 
     try {
       const updated = await updateChatTitle(chatId, tempTitle)
-      setChatInfo(prev => ({ ...prev, title: updated.title }))
+      setChatInfo(prev => ({ ...prev, title: updated }))
       setIsEditingTitle(false)
       if (onTitleUpdate) onTitleUpdate()
     } catch (err) {
-      alert('Erro ao atualizar título.')
+      setErrorMessage('Não foi possível atualizar o título da conversa. Tente novamente.')
+      setShowErrorModal(true)
     }
   }
 
@@ -96,7 +99,8 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
       }
       setMessages(prev => [...prev, assistantMsg])
     } catch (err) {
-      alert('Erro ao enviar mensagem.')
+      setErrorMessage('Erro ao enviar mensagem. Por favor, verifique sua conexão.')
+      setShowErrorModal(true)
     } finally {
       setSending(false)
     }
@@ -230,6 +234,38 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
           </button>
         </form>
       </div>
+
+      {/* Modal de Erro */}
+      {showErrorModal && (
+        <div 
+          className="fixed-top w-100 h-100 d-flex align-items-center justify-content-center px-3"
+          style={{ zIndex: 1100 }}
+        >
+          <div 
+            className="position-absolute w-100 h-100 bg-dark opacity-50"
+            onClick={() => setShowErrorModal(false)}
+          ></div>
+          <div className="card border-0 shadow-lg position-relative" style={{ maxWidth: '400px', width: '100%' }}>
+            <div className="card-body p-4 text-center">
+              <div className="mb-3">
+                <i className="bi bi-exclamation-circle text-danger fs-1"></i>
+              </div>
+              <h5 className="card-title fw-bold mb-2">Ops! Ocorreu um erro</h5>
+              <p className="card-text text-muted mb-4">
+                {errorMessage}
+              </p>
+              <div className="d-flex justify-content-center">
+                <button 
+                  className="btn btn-primary rounded-pill px-5"
+                  onClick={() => setShowErrorModal(false)}
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

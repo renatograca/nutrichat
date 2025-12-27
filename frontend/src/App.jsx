@@ -13,6 +13,8 @@ export default function App({ onLogout }) {
   const [loadingInitial, setLoadingInitial] = useState(true)
   const [chats, setChats] = useState([])
   const [loadingChats, setLoadingChats] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const selectedChatId = chatId || null
 
@@ -60,7 +62,8 @@ export default function App({ onLogout }) {
       setSelectedChatId(newChat.id)
       setIsMenuOpen(false)
     } catch (err) {
-      alert('Erro ao criar novo chat.')
+      setErrorMessage('Não foi possível criar uma nova conversa no momento.')
+      setShowErrorModal(true)
     }
   }
 
@@ -113,6 +116,38 @@ export default function App({ onLogout }) {
           </div>
         </div>
       </main>
+
+      {/* Modal de Erro Global */}
+      {showErrorModal && (
+        <div 
+          className="fixed-top w-100 h-100 d-flex align-items-center justify-content-center px-3"
+          style={{ zIndex: 2000 }}
+        >
+          <div 
+            className="position-absolute w-100 h-100 bg-dark opacity-50"
+            onClick={() => setShowErrorModal(false)}
+          ></div>
+          <div className="card border-0 shadow-lg position-relative" style={{ maxWidth: '400px', width: '100%' }}>
+            <div className="card-body p-4 text-center">
+              <div className="mb-3">
+                <i className="bi bi-exclamation-circle text-danger fs-1"></i>
+              </div>
+              <h5 className="card-title fw-bold mb-2">Ops! Ocorreu um erro</h5>
+              <p className="card-text text-muted mb-4">
+                {errorMessage}
+              </p>
+              <div className="d-flex justify-content-center">
+                <button 
+                  className="btn btn-primary rounded-pill px-5"
+                  onClick={() => setShowErrorModal(false)}
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
