@@ -38,7 +38,9 @@ const corsOptions: cors.CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options('*', (req, res) => {
+  res.sendStatus(200);
+});
 
 app.use(express.json());
 
@@ -52,7 +54,7 @@ app.use('/api/chats', chatRoutes);
 app.use('/api/documents', documentRoutes);
 
 // Error handling
-app.use((err: any, req: any, res: any, next: any) => {
+app.use((err: any, req: any, res: any, _: any) => {
   logger.error(`Erro não tratado: ${err.message}`);
   res.status(500).json({ detail: 'Erro interno do servidor' });
 });
