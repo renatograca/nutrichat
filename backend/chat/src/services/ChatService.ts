@@ -44,7 +44,7 @@ async function askQuestion(question: any, userId: number, chatId: any = null, to
       historyStr = messages.map((m: any) => `${m.role}: ${m.content}`).join('\n');
     }
 
-    const promptPath = path.join(__dirname, '..', 'prompts', 'system_prompt.txt');
+    const promptPath = path.join(__dirname, '..', 'prompts', 'system_prompt.md');
     let fullPrompt = fs.readFileSync(promptPath, 'utf8');
 
     fullPrompt = fullPrompt
