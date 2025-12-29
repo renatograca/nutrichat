@@ -1,0 +1,7 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pear-like shape -->
+  <path d="M256 120c-40 0-70 30-70 70 0 30 15 50 15 80 0 60-45 110-45 150 0 30 25 55 55 55h90c30 0 55-25 55-55 0-40-45-90-45-150 0-30 15-50 15-80 0-40-30-70-70-70z" fill="#a4d037"/>
+  <!-- Leaf/Stem -->
+  <path d="M256 120V80" stroke="#5d4037" stroke-width="20" stroke-linecap="round"/>
+  <path d="M256 110c20-10 40-10 50 5" fill="#4caf50"/>
+</svg>
