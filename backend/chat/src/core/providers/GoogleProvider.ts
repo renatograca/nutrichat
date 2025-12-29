@@ -1,10 +1,18 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+  BatchEmbedContentsRequest,
+  BatchEmbedContentsResponse,
+  ContentEmbedding, EmbedContentRequest,
+  GenerativeModel,
+  GoogleGenerativeAI
+} from '@google/generative-ai';
 import BaseAIProvider from './BaseAIProvider.js';
+import path from "path";
+import fs from "fs";
 
 class GoogleProvider extends BaseAIProvider {
   client: any;
   chatModel: any;
-  embeddingModel: any;
+  embeddingModel: GenerativeModel;
 
   constructor() {
     super();
@@ -17,28 +25,34 @@ class GoogleProvider extends BaseAIProvider {
     this.embeddingModel = this.client.getGenerativeModel({ model: 'gemini-embedding-001' });
   }
 
-  async embedText(text: any) {
+  async embedChunks(texts: string[]) {
     try {
-      const result = await (this as any).embeddingModel.embedContent(text);
-      return result.embedding.values;
+      // O SDK oficial aceita um objeto com a propriedade requests
+      const result = await this.embeddingModel.batchEmbedContents({
+        requests: texts.map((t) => ({
+          content: { role: 'user', parts: [{ text: t }] },
+        })),
+      });
+
+      // Retorna apenas os arrays de valores numéricos
+      return result.embeddings.map(e => e.values);
     } catch (error: any) {
-      throw new Error(`Erro ao gerar embedding: ${error.message}`);
+      console.error("Erro no Batch Embedding:", error);
+      throw new Error(`Erro ao gerar batch embedding: ${error.message}`);
     }
   }
 
-  async askQuestion(question: any, context: any) {
-    const prompt = `
-Você é um assistente de nutrição amigável e informativo.
-Responda usando apenas o contexto abaixo.
-Se não souber, diga "Não tenho informações sobre isso no meu banco de dados nutricional".
+  async askQuestion(history: string, context: string, question: string) {
 
-CONTEXTO:
-${context}
+    const promptPath = path.join(__dirname, '..', 'prompts', 'system_prompt.md');
+    let fullPrompt = fs.readFileSync(promptPath, 'utf8');
 
-PERGUNTA:
-${question}
-    `;
-    return this.chat(prompt);
+    fullPrompt = fullPrompt
+        .replace('{{historyStr}}', history)
+        .replace('{{context}}', context)
+        .replace('{{question}}', question);
+
+    return this.chat(fullPrompt);
   }
 
   async chat(prompt: any) {

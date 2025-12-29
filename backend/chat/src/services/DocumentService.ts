@@ -2,6 +2,8 @@ import { extractTextFromPdf } from '../utils/pdfUtils.js';
 import VectorStore from '../core/VectorStore.js';
 import DocumentRepository from '../repositories/DocumentRepository.js';
 import { getEmbeddingProvider } from '../core/providers/providerFactory.js';
+import {sleep} from "../utils/RequestUtils";
+import {logger} from "../utils/logger";
 
 const embeddingProvider = getEmbeddingProvider();
 const documentRepository = new DocumentRepository();
@@ -12,10 +14,10 @@ function countTokens(text: any) {
   return Math.ceil(text.length / 4);
 }
 
-function chunkText(text: any, maxTokens: any = 500) {
-  const chunks: any[] = [];
+function chunkText(text: any, maxTokens: number = 1500): string[] {
+  const chunks: string[] = [];
   const lines = text.split('\n');
-  let current: any[] = [];
+  let current: string[] = [];
   let tokensCount = 0;
 
   for (const line of lines) {
@@ -38,21 +40,17 @@ function chunkText(text: any, maxTokens: any = 500) {
 
 async function ingestPdf(fileBytes: any, filename: any, userId: number, chatId: any = null) {
   try {
-    // 1. Ler o PDF e dividir em chunks
-    const text = await extractTextFromPdf(fileBytes);
-    const chunks = chunkText(text);
+    const pagesText = await extractTextFromPdf(fileBytes);
 
-    // 1.5. Persistir documento e obter document_id
+    const chunks = chunkText(pagesText);
+
     const documentId = await documentRepository.createDocument(userId, filename);
 
-    // 2. Definir provedor via variável de ambiente
-    const providerName = (process.env.EMBEDDING_PROVIDER || 'google').toLowerCase();
+    const embeddings = await embeddingProvider.embedChunks(chunks);
+
     const vectorStore = new VectorStore();
 
-    // 3. Gerar embeddings e salvar
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const embedding = await (embeddingProvider as any).embedText(chunk);
+    const savePromises = chunks.map((chunk, i) => {
       const metadata = {
         file_name: filename,
         chunk_index: i + 1,
@@ -61,16 +59,19 @@ async function ingestPdf(fileBytes: any, filename: any, userId: number, chatId: 
         chat_id: chatId,
         document_id: documentId,
       };
-      await vectorStore.add(chunk, metadata, embedding);
-    }
+      return vectorStore.add(chunk, metadata, embeddings[i]);
+    });
+
+    await Promise.all(savePromises);
 
     return {
-      message: `Documento '${filename}' processado com sucesso usando ${providerName.charAt(0).toUpperCase() + providerName.slice(1)}.`,
+      message: `Documento '${filename}' processado com sucesso.`,
       chunks_count: chunks.length,
       user_id: userId,
       document_id: documentId,
     };
   } catch (error: any) {
+    logger.error(`Erro ao ingerir PDF: ${error.message}`);
     throw new Error(`Erro ao ingerir PDF: ${error.message}`);
   }
 }

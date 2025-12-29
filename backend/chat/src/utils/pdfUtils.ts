@@ -37,7 +37,7 @@ async function extractTextFromPdf(fileBytes: any) {
 
     return text.trim();
   } catch (error: any) {
-    console.error("Erro técnico PDF.js:", error);
+    console.error('Erro ao extrair texto do PDF: ', error.message);
     throw new Error(`Erro ao extrair texto do PDF: ${error.message}`);
   }
 }
