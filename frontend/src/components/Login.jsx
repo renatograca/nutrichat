@@ -35,7 +35,10 @@ export default function Login({ onLoginSuccess }) {
       <div className="card shadow-sm p-4" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="card-body">
           <div className="text-center mb-4">
-            <h3 className="text-primary fw-bold">NutriChat</h3>
+            <h3 className="text-primary fw-bold d-flex align-items-center justify-content-center gap-2">
+              <i className="bi bi-pear-fill"></i>
+              NutriChat
+            </h3>
             <p className="text-muted small">Faça login para continuar</p>
           </div>
           <form onSubmit={handleSubmit}>

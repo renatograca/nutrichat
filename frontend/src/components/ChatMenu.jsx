@@ -68,7 +68,10 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId,
       >
         <div className="d-flex flex-column h-100">
           <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 fw-bold text-primary">NutriChat</h5>
+            <h5 className="mb-0 fw-bold text-primary d-flex align-items-center gap-2">
+              <i className="bi bi-pear-fill"></i>
+              NutriChat
+            </h5>
             <button className="btn-close" onClick={onClose}></button>
           </div>
 

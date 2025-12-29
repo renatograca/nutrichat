@@ -7,7 +7,10 @@ export default function Header({ onMenuClick, onLogout }) {
         <button className="btn btn-link p-0 me-3 text-dark" onClick={onMenuClick}>
           <i className="bi bi-list fs-3"></i>
         </button>
-        <h1 className="h5 mb-0 fw-bold text-primary">NutriChat</h1>
+        <h1 className="h5 mb-0 fw-bold text-primary d-flex align-items-center gap-2">
+          <i className="bi bi-pear-fill"></i>
+          NutriChat
+        </h1>
       </div>
       
       <div className="d-flex align-items-center gap-2">
