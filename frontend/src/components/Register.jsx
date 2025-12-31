@@ -74,7 +74,11 @@ export default function Register() {
     }
 
     try {
-      await register(formData)
+      const payload = {
+        ...formData,
+        phone: parseInt(formData.phone.replace(/\D/g, ''), 10)
+      }
+      await register(payload)
       setSuccess(true)
       setTimeout(() => {
         navigate('/login')
