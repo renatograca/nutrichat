@@ -11,7 +11,7 @@ public record UserDTO(
     String email,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date dateOfBirth,
-    Long phone,
+    String phone,
     AccountStatus accountStatus
 ) {
 }

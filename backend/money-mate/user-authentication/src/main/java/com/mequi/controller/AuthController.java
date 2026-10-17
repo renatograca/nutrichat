@@ -1,5 +1,7 @@
 package com.mequi.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mequi.config.context.auth.AuthContextService;
@@ -8,11 +10,13 @@ import com.mequi.exceptions.BadRequestException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.service.auth.AuthService;
+import com.mequi.service.auth.dto.PhoneAuthData;
 import com.mequi.service.user.UserService;
 import com.mequi.utils.PasswordUtils;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jetty.util.StringUtil;
 
 @Singleton
 @RequiredArgsConstructor(onConstructor_ = @__(@Inject))
@@ -21,6 +25,7 @@ public class AuthController implements Controller {
   private final AuthContextService authContextService;
   private final AuthService authService;
   private final UserService userService;
+  private final ObjectMapper mapper;
 
   public void login(Context context) throws BadRequestException, UserNotFoundException, InvalidPasswordException {
     final var authContext = authContextService.apply(context);
@@ -29,7 +34,7 @@ public class AuthController implements Controller {
       throw new BadRequestException("User is Null or Invalid");
     }
 
-    if (authContext.user().email() == null) {
+    if (StringUtil.isBlank(authContext.user().email())) {
       throw new BadRequestException("Email is Null or Invalid");
     }
 
@@ -41,6 +46,27 @@ public class AuthController implements Controller {
 
     if (!PasswordUtils.verifyLogin(authContext, userEntity)) {
       throw new InvalidPasswordException("Invalid password");
+    }
+
+    String token = authService.generateToken(userEntity.id());
+    sendSuccessResponse(context, token, userEntity.id());
+  }
+
+  public void loginWithPhone(Context context) throws BadRequestException, UserNotFoundException {
+    final PhoneAuthData authData;
+    try {
+      authData = mapper.readValue(context.body(), PhoneAuthData.class);
+    } catch (JsonProcessingException e) {
+      throw new BadRequestException("Phone is Null or Invalid");
+    }
+
+    if (authData == null || authData.phone() == null || !authData.phone().matches("\\d{10,11}")) {
+      throw new BadRequestException("Phone is Null or Invalid");
+    }
+
+    final var userEntity = userService.findByPhone(authData.phone()).orElse(null);
+    if (userEntity == null) {
+      throw new UserNotFoundException("User not found");
     }
 
     String token = authService.generateToken(userEntity.id());

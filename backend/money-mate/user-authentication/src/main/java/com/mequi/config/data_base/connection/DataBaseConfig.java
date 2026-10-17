@@ -1,9 +1,11 @@
 package com.mequi.config.data_base.connection;
 
+import com.google.inject.Singleton;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 
+@Singleton 
 public class DataBaseConfig {
   private static HikariDataSource dataSource;
 
@@ -11,11 +13,11 @@ public class DataBaseConfig {
     if (dataSource == null) {
       HikariConfig config = new HikariConfig();
 
-      String dbUrl = System.getenv("DATABASE_URL");
+      var properties = properties();
 
-      config.setJdbcUrl("jdbc:" + dbUrl);
-      config.setUsername(System.getenv("DB_USER"));
-      config.setPassword(System.getenv("DB_PASSWORD"));
+      config.setJdbcUrl("jdbc:" + properties.dbUrl);
+      config.setUsername(properties.dbUser);
+      config.setPassword(properties.dbPass);
 
       config.setMaximumPoolSize(10);
       config.setMinimumIdle(2);
@@ -28,5 +30,12 @@ public class DataBaseConfig {
       dataSource = new HikariDataSource(config);
     }
     return dataSource;
+  }
+
+  private static PropertiesDB properties() {
+    var dbUrl = System.getenv("DATABASE_URL") != null ? System.getenv("DATABASE_URL") : "postgresql://localhost:5432/users";
+    var dbUser = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "postgres";
+    var dbPass = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "postgres";
+    return new PropertiesDB(dbUrl, dbUser, dbPass);
   }
 }

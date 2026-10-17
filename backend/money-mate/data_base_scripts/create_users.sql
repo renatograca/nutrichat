@@ -11,7 +11,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL, -- E-mail único
     password_hash VARCHAR(255) NOT NULL, -- Senha criptografada
     date_of_birth DATE, -- Data de nascimento (opcional)
-    phone VARCHAR(20), -- Telefone (opcional)
+    phone VARCHAR(15) UNIQUE NOT NULL, -- Identificador único do usuário
     account_status VARCHAR(20) DEFAULT 'active', -- Status da conta
     created_at TIMESTAMP DEFAULT NOW(), -- Data de cadastro
     updated_at TIMESTAMP DEFAULT NOW() -- Data de atualização

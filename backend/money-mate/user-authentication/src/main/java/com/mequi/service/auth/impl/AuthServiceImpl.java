@@ -2,12 +2,10 @@ package com.mequi.service.auth.impl;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mequi.service.auth.AuthService;
 import java.time.Instant;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 
 @Singleton
 public class AuthServiceImpl implements AuthService {

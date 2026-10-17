@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface UserService {
   Optional<UserEntity> getUserEntityById(Long id) throws UserNotFoundException;
   Optional<UserEntity> findByEmail(String email);
+  Optional<UserEntity> findByPhone(String phone);
   Optional<UserDTO> findById(Long id) throws UserNotFoundException;
   UserDTO create(UserContext context) throws ApiException, JsonProcessingException, SQLException;
   void update(UserContext context) throws SQLException, JsonProcessingException, ApiException;

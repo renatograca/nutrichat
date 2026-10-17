@@ -36,6 +36,11 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public Optional<UserEntity> findByPhone(String phone) {
+    return userRepository.findByPhone(phone);
+  }
+
+  @Override
   public Optional<UserDTO> findById(Long id) throws UserNotFoundException {
      final var userEntity = userRepository.findById(id);
      return userEntity.map(userMapper::toUserDTO);
@@ -44,11 +49,19 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserDTO create(UserContext context) throws ApiException, JsonProcessingException, SQLException {
     final var userData = mapper.readValue(context.context().body(), UserData.class);
+    if (userData.phone() == null || !userData.phone().matches("\\d{10,11}")) {
+      throw new ApiException("phone is null or invalid.");
+    }
     final var userOptional = userRepository.findByEmail(userData.email());
 
     if (userOptional.isPresent()) {
       log.warn("Email de usuario já cadastrado");
       throw new ApiException("email already registered.");
+    }
+
+    if (userRepository.findByPhone(userData.phone()).isPresent()) {
+      log.warn("Telefone de usuario já cadastrado");
+      throw new ApiException("phone already registered.");
     }
 
     final var userEntity = userMapper.toUserEntity(userData);

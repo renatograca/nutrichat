@@ -8,6 +8,7 @@ public class ResourceConfig {
   public static class AuthPaths {
     public static final String ROOT_PATH = "/auth";
     public static final String LOGIN_PATH = ROOT_PATH + "/login";
+    public static final String CHAT_LOGIN_PATH = ROOT_PATH + "/chat/login";
     public static final String VALIDATE_TOKEN_PATH = ROOT_PATH + "/validate";
   }
 }

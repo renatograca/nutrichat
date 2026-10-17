@@ -66,6 +66,26 @@ public class UserRepositoryImpl implements UserRepository {
   }
 
   @Override
+  public Optional<UserEntity> findByPhone(String phone) {
+    final var data = buildDataString(ID, FULL_NAME, PASSWORD_HASH, EMAIL, DATE_OF_BIRTH, PHONE, ACCOUNT_STATUS);
+    final var query = "SELECT " + data + " FROM users WHERE phone = ? AND account_status != 'DELETED'";
+    try(
+        final var conn = dataSource.getConnection();
+        final var stmt = conn.prepareStatement(query)
+    ) {
+      stmt.setString(1, phone);
+      final var resultSet = stmt.executeQuery();
+      if (resultSet.next()) {
+        return Optional.of(mapUserEntity(resultSet));
+      }
+    } catch (SQLException e) {
+      log.error("Error ao encontrar usuário pelo telefone");
+      throw new IllegalStateException("Error ao encontrar usuário pelo telefone", e);
+    }
+    return Optional.empty();
+  }
+
+  @Override
   public UserEntity create(UserEntity userData) throws SQLException {
     final var data = "("
         + buildDataString(FULL_NAME, PASSWORD_HASH, EMAIL, DATE_OF_BIRTH, PHONE, ACCOUNT_STATUS)
@@ -79,7 +99,7 @@ public class UserRepositoryImpl implements UserRepository {
       stmt.setString(2, userData.passwordHash());
       stmt.setString(3, userData.email());
       stmt.setDate(4, userData.dateOfBirth());
-      stmt.setLong(5, userData.phone());
+      stmt.setString(5, userData.phone());
       stmt.setString(6, userData.accountStatus().name());
       final var resultSet = stmt.executeQuery();
 
@@ -163,7 +183,7 @@ public class UserRepositoryImpl implements UserRepository {
         .passwordHash(r.getString(PASSWORD_HASH))
         .email(r.getString(EMAIL))
         .dateOfBirth(r.getDate(DATE_OF_BIRTH))
-        .phone(r.getLong(PHONE))
+        .phone(r.getString(PHONE))
         .accountStatus(AccountStatus.getAccountStatus(r.getString(ACCOUNT_STATUS)))
         .build();
   }

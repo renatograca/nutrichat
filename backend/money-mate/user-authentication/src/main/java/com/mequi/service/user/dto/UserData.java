@@ -12,7 +12,7 @@ public record UserData(
     String password,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date dateOfBirth,
-    long phone,
+    String phone,
     AccountStatus accountStatus
 ) {
     public UserData {

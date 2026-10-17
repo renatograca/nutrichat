@@ -65,7 +65,7 @@ public class UserServiceImplTest {
         .fullName("John Doe")
         .email("john.doe@example.com")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(1234567890L)
+        .phone("01234567890")
         .accountStatus(AccountStatus.ACTIVE)
         .build();
 
@@ -73,7 +73,7 @@ public class UserServiceImplTest {
         .fullName("John Doe")
         .email("john.doe@example.com")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(1234567890L)
+        .phone("01234567890")
         .accountStatus(AccountStatus.ACTIVE)
         .build();
 
@@ -82,7 +82,7 @@ public class UserServiceImplTest {
         .email("john.doe@example.com")
         .password("password123")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(1234567890L)
+        .phone("01234567890")
         .accountStatus(AccountStatus.ACTIVE)
         .build();
 
@@ -124,6 +124,7 @@ public class UserServiceImplTest {
     // Arrange
     when(mapper.readValue(userContext.context().body(), UserData.class)).thenReturn(userData);
     when(userRepository.findByEmail(userData.email())).thenReturn(Optional.empty());
+    when(userRepository.findByPhone(userData.phone())).thenReturn(Optional.empty());
     when(userMapper.toUserEntity(userData)).thenReturn(userEntity);
 
     // Act
@@ -132,6 +133,7 @@ public class UserServiceImplTest {
     // Assert
     verify(mapper, times(1)).readValue(userContext.context().body(), UserData.class);
     verify(userRepository, times(1)).findByEmail(userData.email());
+    verify(userRepository, times(1)).findByPhone(userData.phone());
     verify(userMapper, times(1)).toUserEntity(userData);
     verify(userRepository, times(1)).create(userEntity);
   }
@@ -150,6 +152,20 @@ public class UserServiceImplTest {
     verify(userMapper, never()).toUserEntity(any(UserData.class));
     verify(userRepository, never()).create(any());
     assertEquals("email already registered.", exception.getMessage());
+  }
+
+  @Test
+  void testCreateUserThrowsExceptionWhenPhoneAlreadyRegistered() throws JsonProcessingException, SQLException {
+    when(mapper.readValue(userContext.context().body(), UserData.class)).thenReturn(userData);
+    when(userRepository.findByEmail(userData.email())).thenReturn(Optional.empty());
+    when(userRepository.findByPhone(userData.phone())).thenReturn(Optional.of(userEntity));
+
+    ApiException exception = assertThrows(ApiException.class, () -> userService.create(userContext));
+
+    verify(userRepository, times(1)).findByPhone(userData.phone());
+    verify(userMapper, never()).toUserEntity(any(UserData.class));
+    verify(userRepository, never()).create(any());
+    assertEquals("phone already registered.", exception.getMessage());
   }
 
   @Test

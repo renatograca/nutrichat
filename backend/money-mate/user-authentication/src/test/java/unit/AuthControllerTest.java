@@ -1,7 +1,9 @@
 package unit;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,13 +12,16 @@ import com.mequi.config.context.auth.dto.AuthContext;
 import com.mequi.controller.AuthController;
 import com.mequi.controller.dto.AuthResponse;
 import com.mequi.exceptions.ApiException;
+import com.mequi.exceptions.BadRequestException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.repository.user.entity.UserEntity;
 import com.mequi.service.auth.AuthService;
+import com.mequi.service.auth.dto.PhoneAuthData;
 import com.mequi.service.auth.dto.UserAuthData;
 import com.mequi.service.user.UserService;
 import com.mequi.utils.PasswordUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import java.util.Optional;
@@ -36,6 +41,9 @@ class AuthControllerTest {
 
   @Mock
   private UserService userService;
+
+  @Mock
+  private ObjectMapper mapper;
 
   @Mock
   private Context context;
@@ -101,6 +109,34 @@ class AuthControllerTest {
 
     // Act & Assert
     assertThrows(InvalidPasswordException.class, () -> authController.login(context));
+  }
+
+  @Test
+  void testLoginWithPhone_Success() throws Exception {
+    final var phone = "01123456789";
+    final var userEntity = UserEntity.builder().id(1L).phone(phone).build();
+    final var token = "generatedToken";
+
+    when(context.body()).thenReturn("{\"phone\":\"" + phone + "\"}");
+    when(mapper.readValue(anyString(), eq(PhoneAuthData.class))).thenReturn(new PhoneAuthData(phone));
+    when(userService.findByPhone(phone)).thenReturn(Optional.of(userEntity));
+    when(authService.generateToken(1L)).thenReturn(token);
+
+    authController.loginWithPhone(context);
+
+    verify(context).status(HttpStatus.OK);
+    verify(context).json(argThat(response -> {
+      final var authResponse = (AuthResponse) response;
+      return token.equals(authResponse.token()) && Long.valueOf(1L).equals(authResponse.userId());
+    }));
+  }
+
+  @Test
+  void testLoginWithPhone_InvalidPhone() throws Exception {
+    when(context.body()).thenReturn("{\"phone\":\"123\"}");
+    when(mapper.readValue(anyString(), eq(PhoneAuthData.class))).thenReturn(new PhoneAuthData("123"));
+
+    assertThrows(BadRequestException.class, () -> authController.loginWithPhone(context));
   }
 
   @Test

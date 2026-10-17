@@ -13,7 +13,7 @@ public record UserEntity(
     String passwordHash,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     Date dateOfBirth,
-    Long phone,
+    String phone,
     AccountStatus accountStatus
 ) {
 }

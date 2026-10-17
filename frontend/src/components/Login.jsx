@@ -42,11 +42,11 @@ export default function Login({ onLoginSuccess }) {
             <div className="mb-3">
               <label htmlFor="email" className="form-label">E-mail</label>
               <input 
-                type="email" 
+                type="email"
                 className="form-control"
                 id="email"
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
                 required 
               />

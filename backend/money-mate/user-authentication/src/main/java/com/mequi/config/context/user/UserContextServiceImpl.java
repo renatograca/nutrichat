@@ -1,8 +1,6 @@
 package com.mequi.config.context.user;
 
 import io.javalin.http.Context;
-import java.util.Objects;
-import java.util.Optional;
 
 public class UserContextServiceImpl implements UserContextService {
 

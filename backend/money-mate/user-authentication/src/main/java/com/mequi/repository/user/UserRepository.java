@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface UserRepository {
   Optional<UserEntity> findById(Long id) throws UserNotFoundException;
   Optional<UserEntity> findByEmail(String email);
+  Optional<UserEntity> findByPhone(String phone);
   UserEntity create(UserEntity userData) throws SQLException;
   void update(UserEntity userData) throws SQLException;
   void delete(Long userId) throws SQLException;

@@ -1,5 +1,6 @@
 package com.mequi.routes;
 
+import static com.mequi.config.routes.ResourceConfig.AuthPaths.CHAT_LOGIN_PATH;
 import static com.mequi.config.routes.ResourceConfig.AuthPaths.LOGIN_PATH;
 import static com.mequi.config.routes.ResourceConfig.AuthPaths.VALIDATE_TOKEN_PATH;
 
@@ -15,6 +16,7 @@ public class AuthRoutes implements Routers {
   @Override
   public void addRoutes(Javalin server) {
     server.post(LOGIN_PATH, authController::login);
+    server.post(CHAT_LOGIN_PATH, authController::loginWithPhone);
     server.get(VALIDATE_TOKEN_PATH, authController::validateToken);
   }
 }

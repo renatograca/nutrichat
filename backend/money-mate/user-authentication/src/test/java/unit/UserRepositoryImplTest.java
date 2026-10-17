@@ -61,7 +61,7 @@ public class UserRepositoryImplTest {
     when(resultSet.getString("password_hash")).thenReturn("hashPassword");
     when(resultSet.getString("email")).thenReturn("john.doe@example.com");
     when(resultSet.getDate("date_of_birth")).thenReturn(java.sql.Date.valueOf("1990-01-01"));
-    when(resultSet.getLong("phone")).thenReturn(1234567890L);
+    when(resultSet.getString("phone")).thenReturn("01234567890");
     when(resultSet.getString("account_status")).thenReturn("ACTIVE");
 
     // Act
@@ -73,7 +73,7 @@ public class UserRepositoryImplTest {
     assertEquals("John Doe", user.get().fullName());
     assertEquals("john.doe@example.com", user.get().email());
     assertEquals(java.sql.Date.valueOf("1990-01-01"), user.get().dateOfBirth());
-    assertEquals(1234567890L, user.get().phone());
+    assertEquals("01234567890", user.get().phone());
     assertEquals(AccountStatus.ACTIVE, user.get().accountStatus());
   }
 
@@ -102,7 +102,7 @@ public class UserRepositoryImplTest {
     when(resultSet.getString("password_hash")).thenReturn("hashPassword");
     when(resultSet.getString("email")).thenReturn(email);
     when(resultSet.getDate("date_of_birth")).thenReturn(java.sql.Date.valueOf("1990-01-01"));
-    when(resultSet.getLong("phone")).thenReturn(1234567890L);
+    when(resultSet.getString("phone")).thenReturn("01234567890");
     when(resultSet.getString("account_status")).thenReturn("ACTIVE");
 
     // Act
@@ -114,6 +114,26 @@ public class UserRepositoryImplTest {
   }
 
   @Test
+  void testFindByPhonePreservesLeadingZero() throws SQLException {
+    final var phone = "01123456789";
+    when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    when(resultSet.next()).thenReturn(true);
+    when(resultSet.getLong("id")).thenReturn(1L);
+    when(resultSet.getString("full_name")).thenReturn("John Doe");
+    when(resultSet.getString("password_hash")).thenReturn("hashPassword");
+    when(resultSet.getString("email")).thenReturn("john.doe@example.com");
+    when(resultSet.getDate("date_of_birth")).thenReturn(java.sql.Date.valueOf("1990-01-01"));
+    when(resultSet.getString("phone")).thenReturn(phone);
+    when(resultSet.getString("account_status")).thenReturn("ACTIVE");
+
+    final var user = userRepository.findByPhone(phone);
+
+    assertTrue(user.isPresent());
+    assertEquals(phone, user.get().phone());
+    verify(preparedStatement).setString(1, phone);
+  }
+
+  @Test
   void testCreateUser() throws SQLException {
     // Arrange
     final var userData = UserEntity.builder()
@@ -122,7 +142,7 @@ public class UserRepositoryImplTest {
         .passwordHash("password123")
         .email("john.doe@example.com")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(1234567890L)
+        .phone("01234567890")
         .accountStatus(AccountStatus.ACTIVE)
         .build();
 
@@ -138,7 +158,7 @@ public class UserRepositoryImplTest {
     verify(preparedStatement, times(1)).setString(2, "password123");
     verify(preparedStatement, times(1)).setString(3, "john.doe@example.com");
     verify(preparedStatement, times(1)).setDate(4, java.sql.Date.valueOf("1990-01-01"));
-    verify(preparedStatement, times(1)).setLong(5, 1234567890L);
+    verify(preparedStatement, times(1)).setString(5, "01234567890");
     verify(preparedStatement, times(1)).setString(6, "ACTIVE");
     verify(preparedStatement, times(1)).executeQuery();
   }
@@ -152,7 +172,7 @@ public class UserRepositoryImplTest {
         .passwordHash("password123")
         .email("john.doe@example.com")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(1234567890L)
+        .phone("01234567890")
         .accountStatus(AccountStatus.ACTIVE)
         .build();
 
@@ -171,7 +191,7 @@ public class UserRepositoryImplTest {
         .fullName("John Doe Updated")
         .email("john.doe.updated@example.com")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(9876543210L)
+        .phone("09876543210")
         .build();
 
     // Act
@@ -189,7 +209,7 @@ public class UserRepositoryImplTest {
         .fullName("John Doe Updated")
         .email("john.doe.updated@example.com")
         .dateOfBirth(java.sql.Date.valueOf("1990-01-01"))
-        .phone(9876543210L)
+        .phone("09876543210")
         .build();
 
     when(preparedStatement.executeUpdate()).thenThrow(new SQLException("Database error"));

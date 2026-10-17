@@ -1,11 +1,11 @@
 import { USER_BASE_URL } from './config'
 
-export async function login({ email, password }) {
+async function authenticate(path, credentials) {
   try {
-    const res = await fetch(`${USER_BASE_URL}/auth/login/`, {
+    const res = await fetch(`${USER_BASE_URL}${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify(credentials)
     })
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}))
@@ -27,6 +27,14 @@ export async function login({ email, password }) {
     }
     throw err
   }
+}
+
+export async function login({ email, password }) {
+  return authenticate('/auth/login/', { email, password })
+}
+
+export async function loginWithPhone({ phone }) {
+  return authenticate('/auth/chat/login/', { phone: phone.replace(/\D/g, '') })
 }
 
 export async function validateToken() {
