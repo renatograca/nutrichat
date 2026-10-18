@@ -7,7 +7,9 @@ const chatRepository = new ChatRepository();
 
 export const createChat = async (req: any, res: any) => {
   try {
-    const { user_id, phone, auth_by_phone, title } = req.body;
+    const { user_id, title } = req.body;
+    const { phone, auth_by_phone } = req.query;
+
     const id = getId(auth_by_phone, Number(user_id), phone);
 
     const chatId = await chatRepository.createChat(id, title || null);
@@ -24,6 +26,7 @@ export const associateDocument = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { document_id, user_id, phone, auth_by_phone } = req.body;
+    logger.info(`associateDocument request body:  ${ JSON.stringify({ chatId, document_id, user_id, phone, auth_by_phone }) }`);
     const userId = getId(auth_by_phone, Number(user_id), phone);
 
     if (!document_id) {
@@ -31,7 +34,7 @@ export const associateDocument = async (req: any, res: any) => {
     }
 
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== userId) {
+    if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -50,7 +53,7 @@ export const updateChat = async (req: any, res: any) => {
     const userId = getId(auth_by_phone, Number(user_id), phone);
 
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== userId) {
+    if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -69,10 +72,6 @@ export const listChats = async (req: any, res: any) => {
   try {
     const { user_id, phone, auth_by_phone } = req.query;
 
-    if (!user_id) {
-      return res.status(404).json({ detail: 'user_id is empty' });
-    }
-
     const userId = getId(auth_by_phone, Number(user_id), phone);
     const chats = await chatRepository.getUserChats(userId);
     res.json(chats);
@@ -87,14 +86,12 @@ export const getChat = async (req: any, res: any) => {
     const { chatId } = req.params;
     const { user_id, phone, auth_by_phone } = req.query;
 
-    if (!user_id) {
-      return res.status(400).json({ detail: 'user_id é obrigatório' });
-    }
-
     const userId = getId(auth_by_phone, Number(user_id), phone);
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== userId) {
-      logger.error(`Chat não encontrado para o usuário ${userId}, chatId: ${chatId}`);
+
+    if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
+      const id = auth_by_phone ? phone : userId;
+      logger.error(`Chat não encontrado para o usuário ${id}, chatId: ${chatId}`);
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -110,12 +107,9 @@ export const getChatMessages = async (req: any, res: any) => {
     const { chatId } = req.params;
     const { user_id, phone, auth_by_phone } = req.query;
 
-    if (!user_id) {
-      return res.status(400).json({ detail: 'user_id é obrigatório' });
-    }
-
     const userId = getId(auth_by_phone, Number(user_id), phone);
     const chat = await chatRepository.getChat(chatId);
+
     if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
@@ -132,6 +126,7 @@ export const sendMessage = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { message, user_id, phone, auth_by_phone } = req.body;
+    logger.info(`sendMessage request params and body:  ${ JSON.stringify({ chatId, message, user_id, phone, auth_by_phone }) }`);
     const userId = getId(auth_by_phone, Number(user_id), phone);
 
     const chat = await chatRepository.getChat(chatId);
@@ -175,7 +170,7 @@ export const deleteChat = async (req: any, res: any) => {
 
     const userId = getId(auth_by_phone, Number(user_id), phone);
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== userId) {
+    if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -188,16 +183,20 @@ export const deleteChat = async (req: any, res: any) => {
 };
 
 
-const validationAccessToChat = (auth_by_phone: boolean, user_id: number, phone: string, chat: ChatEntity) => {
-  if (auth_by_phone && phone) {
-    return !chat || chat.user_id !== Number(phone);
+const validationAccessToChat = (auth_by_phone: boolean, user_id: Number, phone: string, chat: ChatEntity): boolean => {
+  if (auth_by_phone) {
+    logger.info(`-------------- Chat telefone: ${chat}`);
+    return !chat || chat.user_id !== phone;
   }
-  return !chat || chat.user_id !== user_id;
+  logger.info(`-------------- Chat user_id: ${chat}`);
+  return !chat || chat.user_id !== String(user_id);
 }
 
 const getId = (auth_by_phone: boolean, user_id: number, phone: string) => {
-  if (auth_by_phone && phone) {
+  if (auth_by_phone) {
+    logger.info(`Using phone for user identification: ${phone}`);
     return Number(phone);
   }
-  return user_id;
+  logger.info(`Using user_id for user identification: ${user_id}`);
+  return Number(user_id);
 }

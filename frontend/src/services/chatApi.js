@@ -33,7 +33,7 @@ export async function getChat(chatId) {
 }
 
 export async function createChat(documentId = null) {
-  const url = `${CHAT_BASE_URL}/api/chats`
+  const url = `${CHAT_BASE_URL}/api/chats?${paramAccessByPhone(getPhoneUser())}`
   const res = await fetch(url, {
     method: 'POST',
     headers: getHeaders(),

@@ -67,12 +67,13 @@ class ChatRepository {
     }
   }
 
-  async createChat(userId: number, title: any = null): Promise<string> {
+  async createChat(userId: Number, title: any = null): Promise<string> {
     const client = await pool.connect();
     try {
+      logger.info(`Criando chat para userId: ${userId} com título: ${title}`);
       const result = await client.query(
         'INSERT INTO chats (user_id, title) VALUES ($1, $2) RETURNING id',
-        [userId, title]
+        [String(userId), title]
       );
       return result.rows[0].id.toString();
     } catch (error: any) {
@@ -122,7 +123,7 @@ class ChatRepository {
       );
       return result.rows.map((r: any) => ({
         id: r.id.toString(),
-        user_id: Number(r.user_id),
+        user_id: r.user_id,
         document_id: r.document_id ? r.document_id.toString() : null,
         title: r.title,
         created_at: r.created_at,
@@ -147,7 +148,7 @@ class ChatRepository {
       if (r) {
         return {
           id: r.id.toString(),
-          user_id: Number(r.user_id),
+          user_id: r.user_id,
           document_id: r.document_id ? r.document_id.toString() : "",
           title: r.title,
           created_at: r.created_at,

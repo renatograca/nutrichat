@@ -45,7 +45,7 @@ CREATE INDEX idx_documents_created_at ON documents(created_at);
 
 CREATE TABLE chats (
     id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id integer NOT NULL,
+    user_id bigint NOT NULL,
     title varchar,
     document_id uuid REFERENCES documents(id),
     created_at timestamp DEFAULT CURRENT_TIMESTAMP,

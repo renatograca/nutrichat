@@ -17,10 +17,13 @@ async function authenticate(path, credentials) {
       throw error
     }
     const data = await res.json()
+        console.log('validateToken response:', { data})
+
     if (data?.token) {
       try { 
         localStorage.setItem('auth_token', data.token) 
         if (data.user_id) localStorage.setItem('user_id', data.user_id)
+        if (data.user_phone) localStorage.setItem('phone', data.user_phone)
       } catch {}
     }
     return data
@@ -55,8 +58,9 @@ export async function validateToken() {
       return null
     }
     const data = await res.json()
-    if (data?.user_id) {
-      try { localStorage.setItem('user_id', data.user_id) } catch {}
+    logger.info(`validateToken response:  ${ JSON.stringify({ data }) }`)
+    if (data?.user_id || data?.phone) {
+      try { localStorage.setItem('user_id', data.user_id), localStorage.setItem('phone', data.phone) } catch {}
       return data
     } else {
       // Se validou o token mas não retornou user_id, consideramos inválido para o app
