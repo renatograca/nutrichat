@@ -1,5 +1,4 @@
-# Build stage
-FROM gradle:8.5-jdk21 AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 WORKDIR /app
 
 COPY gradlew settings.gradle build.gradle ./
@@ -13,7 +12,7 @@ RUN ./gradlew clean build -x test --no-daemon
 
 RUN cp $(ls -S build/libs/*.jar | grep -v "plain" | head -n 1) /app/app-ready.jar
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
 RUN apk add --no-cache curl
