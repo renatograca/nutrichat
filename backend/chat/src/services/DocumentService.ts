@@ -2,6 +2,7 @@ import { extractTextFromPdf } from '../utils/pdfUtils.js';
 import VectorStore from '../core/VectorStore.js';
 import DocumentRepository from '../repositories/DocumentRepository.js';
 import { getEmbeddingProvider } from '../core/providers/providerFactory.js';
+import { logger } from '../utils/logger.js';
 
 const embeddingProvider = getEmbeddingProvider();
 const documentRepository = new DocumentRepository();
@@ -38,21 +39,23 @@ function chunkText(text: any, maxTokens: any = 500) {
 
 async function ingestPdf(fileBytes: any, filename: any, userId: number, chatId: any = null) {
   try {
-    // 1. Ler o PDF e dividir em chunks
     const text = await extractTextFromPdf(fileBytes);
-    const chunks = chunkText(text);
+    let chunks = chunkText(text);
 
-    // 1.5. Persistir documento e obter document_id
+    chunks = chunks.filter(chunk => chunk && chunk.trim().length > 0);
+
+    if (chunks.length === 0) {
+      throw new Error("O PDF não contém texto legível ou é uma imagem escaneada.");
+    }
+
     const documentId = await documentRepository.createDocument(userId, filename);
 
-    // 2. Definir provedor via variável de ambiente
     const providerName = (process.env.EMBEDDING_PROVIDER || 'google').toLowerCase();
     const vectorStore = new VectorStore();
 
-    // 3. Gerar embeddings e salvar
     for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const embedding = await (embeddingProvider as any).embedText(chunk);
+      const chunk = chunks[i];      
+      const embedding = await embeddingProvider.embedText(chunk);
       const metadata = {
         file_name: filename,
         chunk_index: i + 1,

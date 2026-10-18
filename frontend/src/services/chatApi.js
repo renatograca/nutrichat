@@ -8,7 +8,17 @@ const getHeaders = () => {
   }
 }
 
+let onUnauthenticated = () => {}
+export function setOnUnauthenticated(handler) {
+  onUnauthenticated = handler
+}
+
 async function handleJson(res, url, errorMessage) {
+  if (res.status === 401) {
+    await logFetchError(res, url)
+    onUnauthenticated()
+    throw new Error('Sessão expirada')
+  }
   if (!res.ok) {
     await logFetchError(res, url)
     throw new Error(errorMessage)
@@ -89,7 +99,7 @@ export async function uploadFile(file, chatId) {
   const token = getToken()
   const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
 
-  const url = `${CHAT_BASE_URL}/api/documents/`
+  const url = `${CHAT_BASE_URL}/api/documents?${paramAccessByPhone(getPhoneUser())}`
   const res = await fetch(url, {
     method: 'POST',
     headers,

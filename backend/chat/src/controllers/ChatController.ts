@@ -1,7 +1,7 @@
 import ChatRepository from '../repositories/ChatRepository.js';
-import { ChatEntity } from '../repositories/entity/ChatEntity.js';
 import { askQuestion } from '../services/ChatService.js';
 import { logger } from '../utils/logger.js';
+import { getId, validationAccessToChat } from '../utils/ValidationsUtils.js';
 
 const chatRepository = new ChatRepository();
 
@@ -26,7 +26,6 @@ export const associateDocument = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { document_id, user_id, phone, auth_by_phone } = req.body;
-    logger.info(`associateDocument request body:  ${ JSON.stringify({ chatId, document_id, user_id, phone, auth_by_phone }) }`);
     const userId = getId(auth_by_phone, Number(user_id), phone);
 
     if (!document_id) {
@@ -126,7 +125,6 @@ export const sendMessage = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { message, user_id, phone, auth_by_phone } = req.body;
-    logger.info(`sendMessage request params and body:  ${ JSON.stringify({ chatId, message, user_id, phone, auth_by_phone }) }`);
     const userId = getId(auth_by_phone, Number(user_id), phone);
 
     const chat = await chatRepository.getChat(chatId);
@@ -181,22 +179,3 @@ export const deleteChat = async (req: any, res: any) => {
     res.status(400).json({ detail: error.message });
   }
 };
-
-
-const validationAccessToChat = (auth_by_phone: boolean, user_id: Number, phone: string, chat: ChatEntity): boolean => {
-  if (auth_by_phone) {
-    logger.info(`-------------- Chat telefone: ${chat}`);
-    return !chat || chat.user_id !== phone;
-  }
-  logger.info(`-------------- Chat user_id: ${chat}`);
-  return !chat || chat.user_id !== String(user_id);
-}
-
-const getId = (auth_by_phone: boolean, user_id: number, phone: string) => {
-  if (auth_by_phone) {
-    logger.info(`Using phone for user identification: ${phone}`);
-    return Number(phone);
-  }
-  logger.info(`Using user_id for user identification: ${user_id}`);
-  return Number(user_id);
-}

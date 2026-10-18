@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import Login from './components/Login'
 import PhoneLogin from './components/PhoneLogin'
 import Register from './components/Register'
 import OfflineScreen from './components/OfflineScreen'
 import { logout, validateToken } from './services/auth'
+import { setOnUnauthenticated } from './services/chatApi'
 
 function isAuthenticated() {
   try { 
@@ -19,7 +19,6 @@ export default function AuthGate({ children }) {
   const [loading, setLoading] = useState(true)
   const [isOffline, setIsOffline] = useState(false)
   const navigate = useNavigate()
-  const location = useLocation()
 
   async function checkAuth() {
     setLoading(true)
@@ -44,6 +43,14 @@ export default function AuthGate({ children }) {
   useEffect(() => {
     checkAuth()
   }, [])
+
+  useEffect(() => {
+    setOnUnauthenticated(() => {
+      logout()
+      setAuthed(false)
+      navigate('/login', { replace: true })
+    })
+  }, [navigate])
 
   function handleLoginSuccess() {
     setAuthed(true)
