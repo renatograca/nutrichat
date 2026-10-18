@@ -1,14 +1,17 @@
-import { USER_BASE_URL } from './config'
+import { USER_BASE_URL, logFetchError } from './config'
 
 async function authenticate(path, credentials) {
   try {
-    const res = await fetch(`${USER_BASE_URL}${path}`, {
+    const url = `${USER_BASE_URL}${path}`
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
     })
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}))
+      let errorData
+      try { errorData = await res.json() } catch { errorData = {} }
+      await logFetchError(res, url, { path, body: errorData })
       const error = new Error(errorData.message || 'login failed')
       error.status = res.status
       throw error
@@ -41,11 +44,13 @@ export async function validateToken() {
   const token = localStorage.getItem('auth_token')
   if (!token) return null
   try {
-    const res = await fetch(`${USER_BASE_URL}/auth/validate/`, {
+    const url = `${USER_BASE_URL}/auth/validate/`
+    const res = await fetch(url, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` }
     })
     if (!res.ok) {
+      await logFetchError(res, url, { action: 'validateToken' })
       logout()
       return null
     }

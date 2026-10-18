@@ -12,3 +12,15 @@ export function getUserId() {
   try { return localStorage.getItem('user_id') }
   catch { return null }
 }
+
+export async function logFetchError(res, url, context = {}) {
+  let body
+  try { body = await res.json().catch(() => null) } catch {}
+  console.error('[API ERROR]', {
+    url,
+    status: res.status,
+    statusText: res.statusText,
+    body,
+    ...context
+  })
+}

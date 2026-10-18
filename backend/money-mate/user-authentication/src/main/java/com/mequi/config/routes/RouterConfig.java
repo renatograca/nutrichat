@@ -8,7 +8,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RouterConfig {
 
   private final Set<Routers> routes;

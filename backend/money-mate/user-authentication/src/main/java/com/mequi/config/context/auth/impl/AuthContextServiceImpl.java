@@ -9,7 +9,7 @@ import com.mequi.service.auth.dto.UserAuthData;
 import io.javalin.http.Context;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuthContextServiceImpl implements AuthContextService {
 
   private final ObjectMapper mapper;

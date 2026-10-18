@@ -33,7 +33,7 @@ public class DataBaseConfig {
   }
 
   private static PropertiesDB properties() {
-    var dbUrl = System.getenv("DATABASE_URL") != null ? System.getenv("DATABASE_URL") : "postgresql://localhost:5432/users";
+    var dbUrl = System.getenv("DATABASE_URL") != null ? System.getenv("DATABASE_URL") : "postgresql://localhost:5432/users_db";
     var dbUser = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "postgres";
     var dbPass = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "postgres";
     return new PropertiesDB(dbUrl, dbUser, dbPass);

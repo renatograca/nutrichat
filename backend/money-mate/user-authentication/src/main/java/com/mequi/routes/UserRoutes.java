@@ -7,9 +7,8 @@ import com.mequi.controller.UserController;
 import io.javalin.Javalin;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserRoutes implements Routers {
-
 
   private final UserController userController;
 

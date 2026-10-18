@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.eclipse.jetty.util.StringUtil;
 
 @Singleton
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuthMiddlewareImpl implements AuthMiddleware {
 
   private final AuthService authService;

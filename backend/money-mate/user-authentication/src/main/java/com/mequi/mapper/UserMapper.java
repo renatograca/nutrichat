@@ -7,10 +7,13 @@ import com.mequi.utils.PasswordUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(imports = PasswordUtils.class)
 public interface UserMapper {
 
+  UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+  
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "passwordHash", source = "password", qualifiedByName = "hash")
   UserEntity toUserEntity(UserData userData);

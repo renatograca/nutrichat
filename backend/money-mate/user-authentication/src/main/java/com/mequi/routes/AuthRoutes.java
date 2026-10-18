@@ -9,7 +9,7 @@ import com.mequi.controller.AuthController;
 import io.javalin.Javalin;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class AuthRoutes implements Routers {
   private final AuthController authController;
 

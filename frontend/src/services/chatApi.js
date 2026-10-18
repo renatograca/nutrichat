@@ -1,4 +1,4 @@
-import {CHAT_BASE_URL, getToken, getUserId} from './config'
+import {CHAT_BASE_URL, getToken, getUserId, logFetchError} from './config'
 
 const getHeaders = () => {
   const token = getToken()
@@ -8,72 +8,75 @@ const getHeaders = () => {
   }
 }
 
+async function handleJson(res, url, errorMessage) {
+  if (!res.ok) {
+    await logFetchError(res, url)
+    throw new Error(errorMessage)
+  }
+  return await res.json()
+}
+
 export async function getChats() {
   const userId = getUserId()
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats?user_id=${userId}`, {
-    headers: getHeaders()
-  })
-  if (!res.ok) throw new Error('Failed to fetch chats')
-  return await res.json()
+  const url = `${CHAT_BASE_URL}/api/chats?user_id=${userId}`
+  const res = await fetch(url, { headers: getHeaders() })
+  return handleJson(res, url, 'Failed to fetch chats')
 }
 
 export async function getChat(chatId) {
   const userId = getUserId()
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`, {
-    headers: getHeaders()
-  })
-  if (!res.ok) throw new Error('Failed to fetch chat')
-  const data = await res.json()
+  const url = `${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`
+  const res = await fetch(url, { headers: getHeaders() })
+  const data = await handleJson(res, url, 'Failed to fetch chat')
   console.log('getChat response:', data)
   return data
 }
 
 export async function createChat(documentId = null) {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats`, {
+  const url = `${CHAT_BASE_URL}/api/chats`
+  const res = await fetch(url, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({ user_id: getUserId(), document_id: documentId })
   })
-  if (!res.ok) throw new Error('Failed to create chat')
-  return await res.json()
+  return handleJson(res, url, 'Failed to create chat')
 }
 
 export async function updateChatTitle(chatId, title) {
   const userId = getUserId()
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}`, {
+  const url = `${CHAT_BASE_URL}/api/chats/${chatId}`
+  const res = await fetch(url, {
     method: 'PATCH',
     headers: getHeaders(),
     body: JSON.stringify({ user_id: userId, title })
   })
-  if (!res.ok) throw new Error('Failed to update chat title')
-  return await res.json()
+  return handleJson(res, url, 'Failed to update chat title')
 }
 
 export async function getMessages(chatId) {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages?user_id=${getUserId()}`, {
-    headers: getHeaders()
-  })
-  if (!res.ok) throw new Error('Failed to fetch messages')
-  return await res.json()
+  const url = `${CHAT_BASE_URL}/api/chats/${chatId}/messages?user_id=${getUserId()}`
+  const res = await fetch(url, { headers: getHeaders() })
+  return handleJson(res, url, 'Failed to fetch messages')
 }
 
 export async function sendMessage(chatId, message) {
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}/messages`, {
+  const url = `${CHAT_BASE_URL}/api/chats/${chatId}/messages`
+  const res = await fetch(url, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({ message, user_id: getUserId() })
   })
-  if (!res.ok) throw new Error('Failed to send message')
-  return await res.json()
+  return handleJson(res, url, 'Failed to send message')
 }
 
 export async function deleteChat(chatId) {
   const userId = getUserId()
-  const res = await fetch(`${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`, {
-    method: 'DELETE',
-    headers: getHeaders()
-  })
-  if (!res.ok) throw new Error('Failed to delete chat')
+  const url = `${CHAT_BASE_URL}/api/chats/${chatId}?user_id=${userId}`
+  const res = await fetch(url, { method: 'DELETE', headers: getHeaders() })
+  if (!res.ok) {
+    await logFetchError(res, url)
+    throw new Error('Failed to delete chat')
+  }
   return true
 }
 
@@ -86,11 +89,15 @@ export async function uploadFile(file, chatId) {
   const token = getToken()
   const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
 
-  const res = await fetch(`${CHAT_BASE_URL}/api/documents/`, {
+  const url = `${CHAT_BASE_URL}/api/documents/`
+  const res = await fetch(url, {
     method: 'POST',
     headers,
     body: fd
   })
-  if (!res.ok) throw new Error('Upload failed')
+  if (!res.ok) {
+    await logFetchError(res, url)
+    throw new Error('Upload failed')
+  }
   return await res.json()
 }

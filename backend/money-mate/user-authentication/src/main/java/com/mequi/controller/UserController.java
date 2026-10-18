@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserController implements Controller {
 
   private final UserContextService userContextService;

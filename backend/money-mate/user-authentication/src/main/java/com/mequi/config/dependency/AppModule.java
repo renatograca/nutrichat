@@ -11,7 +11,6 @@ import com.mequi.config.data_base.connection.DataBaseConfig;
 import com.mequi.config.middleware.AuthMiddleware;
 import com.mequi.config.middleware.impl.AuthMiddlewareImpl;
 import com.mequi.mapper.UserMapper;
-import com.mequi.mapper.UserMapperImpl;
 import com.mequi.repository.user.UserRepository;
 import com.mequi.repository.user.impl.UserRepositoryImpl;
 import com.mequi.routes.AuthRoutes;
@@ -35,7 +34,7 @@ public class AppModule extends AbstractModule {
   }
 
   private void userModule() {
-    bind(UserMapper.class).to(UserMapperImpl.class).in(Singleton.class);
+    bind(UserMapper.class).to(UserMapper.INSTANCE.getClass()).in(Singleton.class);
     bind(UserContextService.class).to(UserContextServiceImpl.class).in(Singleton.class);
     bind(UserService.class).to(UserServiceImpl.class).in(Singleton.class);
   }

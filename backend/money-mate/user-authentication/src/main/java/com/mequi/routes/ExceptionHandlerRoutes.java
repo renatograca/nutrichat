@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
-@RequiredArgsConstructor(onConstructor_ = @__(@Inject))
+@RequiredArgsConstructor
 public class ExceptionHandlerRoutes implements Routers {
 
   @Override
