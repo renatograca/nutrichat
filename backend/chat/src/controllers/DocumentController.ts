@@ -7,7 +7,7 @@ const chatRepository = new ChatRepository();
 export const ingestDocument = async (req: any, res: any) => {
   try {
     const file = req.file;
-    const { user_id, chat_id } = req.body;
+    const { user_id, chat_id, phone, auth_by_phone } = req.body;
     const userId = Number(user_id);
 
     logger.info(`Iniciando ingestão de documento: filename=${file?.originalname}, user_id=${userId}, chat_id=${chat_id}`);
@@ -40,7 +40,7 @@ export const ingestDocument = async (req: any, res: any) => {
             detail: 'Chat não encontrado',
           });
       }
-      
+
       if (chat.user_id !== userId) {
         logger.warn(`Usuário ${userId} tentou associar documento ao chat ${chat_id} que pertence a outro usuário`);
         return res
@@ -59,4 +59,3 @@ export const ingestDocument = async (req: any, res: any) => {
     res.status(400).json({ detail: error.message });
   }
 };
-

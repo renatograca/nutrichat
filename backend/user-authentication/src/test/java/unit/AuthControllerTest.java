@@ -8,7 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mequi.config.context.auth.AuthContextService;
-import com.mequi.config.context.auth.dto.AuthContext;
+import com.mequi.config.context.auth.PhoneAuthContextService;
+import com.mequi.config.context.auth.dto.PhoneAuthContext;
 import com.mequi.controller.AuthController;
 import com.mequi.controller.dto.AuthResponse;
 import com.mequi.exceptions.ApiException;
@@ -37,6 +38,9 @@ class AuthControllerTest {
   private AuthContextService authContextService;
 
   @Mock
+  private PhoneAuthContextService phoneAuthContextService;
+
+  @Mock
   private AuthService authService;
 
   @Mock
@@ -61,7 +65,7 @@ class AuthControllerTest {
     // Arrange
     final var password = "password";
     final var email = "test@example.com";
-    final var authContext = AuthContext.builder().user(UserAuthData.builder().email(email).password(password).build()).build();
+    final var authContext = com.mequi.config.context.auth.dto.AuthContext.builder().user(UserAuthData.builder().email(email).password(password).build()).build();
     final var userEntity = UserEntity.builder().id(1L).email(email).passwordHash(PasswordUtils.hash(password)).build();
     final var token = "generatedToken";
 
@@ -86,7 +90,7 @@ class AuthControllerTest {
   void testLogin_UserNotFound() {
     // Arrange
     final var email = "notfound@example.com";
-    final var authContext = AuthContext.builder().user(UserAuthData.builder().email(email).password("password").build()).build();
+    final var authContext = com.mequi.config.context.auth.dto.AuthContext.builder().user(UserAuthData.builder().email(email).password("password").build()).build();
 
     when(authContextService.apply(context)).thenReturn(authContext);
     when(userService.findByEmail(email)).thenReturn(Optional.empty());
@@ -101,7 +105,7 @@ class AuthControllerTest {
     final var correctPassword = "correctPassword";
     final var wrongPassword = "wrongPassword";
     final var email = "test@example.com";
-    final var authContext = AuthContext.builder().user(UserAuthData.builder().email(email).password(wrongPassword).build()).build();
+    final var authContext = com.mequi.config.context.auth.dto.AuthContext.builder().user(UserAuthData.builder().email(email).password(wrongPassword).build()).build();
     final var userEntity = UserEntity.builder().id(1L).email(email).passwordHash(PasswordUtils.hash(correctPassword)).build();
 
     when(authContextService.apply(context)).thenReturn(authContext);
@@ -116,27 +120,42 @@ class AuthControllerTest {
     final var phone = "01123456789";
     final var userEntity = UserEntity.builder().id(1L).phone(phone).build();
     final var token = "generatedToken";
+    final var phoneAuthData = new PhoneAuthData(phone);
+    final var phoneAuthContext = PhoneAuthContext.builder().phone(phoneAuthData).build();
 
-    when(context.body()).thenReturn("{\"phone\":\"" + phone + "\"}");
-    when(mapper.readValue(anyString(), eq(PhoneAuthData.class))).thenReturn(new PhoneAuthData(phone));
+    when(phoneAuthContextService.apply(context)).thenReturn(phoneAuthContext);
     when(userService.findByPhone(phone)).thenReturn(Optional.of(userEntity));
-    when(authService.generateToken(1L)).thenReturn(token);
+    when(authService.generateToken(phone)).thenReturn(token);
 
     authController.loginWithPhone(context);
 
     verify(context).status(HttpStatus.OK);
     verify(context).json(argThat(response -> {
       final var authResponse = (AuthResponse) response;
-      return token.equals(authResponse.token()) && Long.valueOf(1L).equals(authResponse.userId());
+      return token.equals(authResponse.token()) && phone.equals(authResponse.userPhone());
     }));
   }
 
   @Test
   void testLoginWithPhone_InvalidPhone() throws Exception {
-    when(context.body()).thenReturn("{\"phone\":\"123\"}");
-    when(mapper.readValue(anyString(), eq(PhoneAuthData.class))).thenReturn(new PhoneAuthData("123"));
+    final var phoneAuthData = new PhoneAuthData("123");
+    final var phoneAuthContext = PhoneAuthContext.builder().phone(phoneAuthData).build();
+
+    when(phoneAuthContextService.apply(context)).thenReturn(phoneAuthContext);
 
     assertThrows(BadRequestException.class, () -> authController.loginWithPhone(context));
+  }
+
+  @Test
+  void testLoginWithPhone_UserNotFound() throws Exception {
+    final var phone = "01123456789";
+    final var phoneAuthData = new PhoneAuthData(phone);
+    final var phoneAuthContext = PhoneAuthContext.builder().phone(phoneAuthData).build();
+
+    when(phoneAuthContextService.apply(context)).thenReturn(phoneAuthContext);
+    when(userService.findByPhone(phone)).thenReturn(Optional.empty());
+
+    assertThrows(UserNotFoundException.class, () -> authController.loginWithPhone(context));
   }
 
   @Test

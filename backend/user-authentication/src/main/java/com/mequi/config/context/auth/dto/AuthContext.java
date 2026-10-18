@@ -8,6 +8,7 @@ import lombok.Builder;
 public record AuthContext(
     String path,
     Long userId,
+    String phone,
     UserAuthData user,
     Context context
 ) {

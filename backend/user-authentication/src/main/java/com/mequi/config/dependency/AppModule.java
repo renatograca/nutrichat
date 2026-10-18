@@ -4,7 +4,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.mequi.config.context.auth.AuthContextService;
+import com.mequi.config.context.auth.PhoneAuthContextService;
 import com.mequi.config.context.auth.impl.AuthContextServiceImpl;
+import com.mequi.config.context.auth.impl.PhoneAuthContextServiceImpl;
 import com.mequi.config.context.user.UserContextService;
 import com.mequi.config.context.user.UserContextServiceImpl;
 import com.mequi.config.data_base.connection.DataBaseConfig;
@@ -47,6 +49,7 @@ public class AppModule extends AbstractModule {
   private void authBaseConfig() {
     bind(AuthService.class).to(AuthServiceImpl.class).in(Singleton.class);
     bind(AuthContextService.class).to(AuthContextServiceImpl.class).in(Singleton.class);
+    bind(PhoneAuthContextService.class).to(PhoneAuthContextServiceImpl.class).in(Singleton.class);
     bind(AuthMiddleware.class).to(AuthMiddlewareImpl.class).in(Singleton.class);
   }
 
