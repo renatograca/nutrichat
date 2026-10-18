@@ -8,7 +8,8 @@ import { setOnUnauthenticated } from './services/chatApi'
 
 function isAuthenticated() {
   try { 
-    return !!localStorage.getItem('auth_token') && !!localStorage.getItem('user_id')
+    return !!localStorage.getItem('auth_token') 
+    && (!!localStorage.getItem('user_id') || !!localStorage.getItem('phone'))
   } catch { 
     return false 
   }
@@ -21,6 +22,7 @@ export default function AuthGate({ children }) {
   const navigate = useNavigate()
 
   async function checkAuth() {
+    console.log('Checking authentication status...')
     setLoading(true)
     setIsOffline(false)
     if (isAuthenticated()) {
@@ -35,8 +37,10 @@ export default function AuthGate({ children }) {
         }
       }
     } else {
+      console.log('User is not authenticated.')
       setAuthed(false)
     }
+    console.log('Authentication check complete. Authenticated:', authed, 'Offline:', isOffline)
     setLoading(false)
   }
 

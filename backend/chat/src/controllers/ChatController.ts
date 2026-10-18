@@ -124,7 +124,8 @@ export const getChatMessages = async (req: any, res: any) => {
 export const sendMessage = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
-    const { message, user_id, phone, auth_by_phone } = req.body;
+    const { message, user_id } = req.body;
+    const { phone, auth_by_phone } = req.query;
     const userId = getId(auth_by_phone, Number(user_id), phone);
 
     const chat = await chatRepository.getChat(chatId);

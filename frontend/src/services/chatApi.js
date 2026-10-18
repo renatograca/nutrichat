@@ -69,7 +69,7 @@ export async function getMessages(chatId) {
 }
 
 export async function sendMessage(chatId, message) {
-  const url = `${CHAT_BASE_URL}/api/chats/${chatId}/messages`
+  const url = `${CHAT_BASE_URL}/api/chats/${chatId}/messages?${paramAccessByPhone(getPhoneUser())}`
   const res = await fetch(url, {
     method: 'POST',
     headers: getHeaders(),

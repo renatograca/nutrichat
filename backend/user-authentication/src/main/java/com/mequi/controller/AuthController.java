@@ -19,6 +19,8 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
 
+import static java.util.Objects.isNull;
+
 import java.sql.SQLException;
 
 import org.eclipse.jetty.util.StringUtil;
@@ -77,12 +79,19 @@ public class AuthController implements Controller {
 
   public void validateToken(Context context) {
     String token = context.header("Authorization");
-    if (token != null && token.startsWith("Bearer ")) {
-      token = token.substring(7);
+    if (isNull(token)) {
+      throw new BadRequestException("Authorization header is missing");
     }
 
     try {
       String userId = authService.validateToken(token);
+      String authByPhone = context.queryParam("auth_by_phone");
+
+      if (Boolean.TRUE.equals(Boolean.valueOf(authByPhone))) {
+        sendSuccessResponseForPhone(context, token, userId);
+        return;
+      }
+
       sendSuccessResponse(context, token, Long.parseLong(userId));
     } catch (Exception e) {
       context.status(HttpStatus.UNAUTHORIZED).json(AuthResponse.builder().message("Token is invalid").build());
