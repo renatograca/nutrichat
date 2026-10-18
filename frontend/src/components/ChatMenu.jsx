@@ -68,7 +68,11 @@ export default function ChatMenu({ isOpen, onClose, onSelectChat, currentChatId,
       >
         <div className="d-flex flex-column h-100">
           <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 fw-bold text-primary">NutriChat</h5>
+            <img
+              src="/icons/logo.png"
+              alt="NutriChat"
+              style={{ width: '52px', height: '52px', objectFit: 'contain' }}
+            />
             <button className="btn-close" onClick={onClose}></button>
           </div>
 

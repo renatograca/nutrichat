@@ -118,7 +118,7 @@ export default function App({ onLogout }) {
               ) : (
                 <EmptyState 
                   icon="chat-dots"
-                  title="Bem-vindo ao NutriChat"
+                  title="Bem-vindo"
                   message="Selecione uma conversa no menu ou inicie uma nova para começar."
                   action={{ label: 'Nova Conversa', onClick: handleNewChat }}
                 />

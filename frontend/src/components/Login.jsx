@@ -35,7 +35,12 @@ export default function Login({ onLoginSuccess }) {
       <div className="card shadow-sm p-4" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="card-body">
           <div className="text-center mb-4">
-            <h3 className="text-primary fw-bold">NutriChat</h3>
+            <img
+              src="/icons/logo.png"
+              alt="NutriChat"
+              className="img-fluid"
+              style={{ width: '150px', height: '150px', objectFit: 'contain' }}
+            />
             <p className="text-muted small">Faça login para continuar</p>
           </div>
           <form onSubmit={handleSubmit}>

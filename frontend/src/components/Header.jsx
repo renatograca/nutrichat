@@ -7,7 +7,11 @@ export default function Header({ onMenuClick, onLogout }) {
         <button className="btn btn-link p-0 me-3 text-dark" onClick={onMenuClick}>
           <i className="bi bi-list fs-3"></i>
         </button>
-        <h1 className="h5 mb-0 fw-bold text-primary">NutriChat</h1>
+        <img
+          src="/icons/logo.png"
+          alt="NutriChat"
+          style={{ width: '52px', height: '52px', objectFit: 'contain' }}
+        />
       </div>
       
       <div className="d-flex align-items-center gap-2">
