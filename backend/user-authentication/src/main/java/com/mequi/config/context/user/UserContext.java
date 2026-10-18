@@ -7,5 +7,6 @@ import lombok.Builder;
 public record UserContext(
     String Path,
     String userId,
+    String phone,
     Context context
 ) {}

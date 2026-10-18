@@ -19,7 +19,6 @@ public class AuthContextServiceImpl implements AuthContextService {
 
     try {
       final var userAuthData = mapper.readValue(context.body(), UserAuthData.class);
-
       return AuthContext.builder()
           .path(context.path())
           .userId(userAuthData.id())

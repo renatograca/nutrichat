@@ -1,6 +1,8 @@
 package com.mequi.mapper;
 
+import com.mequi.repository.user.entity.UserPhone;
 import com.mequi.repository.user.entity.UserEntity;
+import com.mequi.service.user.dto.PhoneDTO;
 import com.mequi.service.user.dto.UserDTO;
 import com.mequi.service.user.dto.UserData;
 import com.mequi.utils.PasswordUtils;
@@ -25,6 +27,8 @@ public interface UserMapper {
   UserData toUserData(UserEntity user);
 
   UserDTO toUserDTO(UserEntity user);
+
+  PhoneDTO toPhoneDTO(UserPhone userPhone);
 
   @Named("hash")
   default String passwordHash(String password) {

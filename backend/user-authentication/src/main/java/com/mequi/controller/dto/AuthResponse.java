@@ -8,6 +8,8 @@ public record AuthResponse(
   String message,
   String token,
   @JsonProperty("user_id")
-  Long userId
+  Long userId,
+  @JsonProperty("user_phone")
+  String userPhone
 ) {
 }

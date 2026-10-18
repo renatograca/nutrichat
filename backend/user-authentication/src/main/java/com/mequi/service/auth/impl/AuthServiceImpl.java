@@ -30,4 +30,13 @@ public class AuthServiceImpl implements AuthService {
     final var jwt = verifier.verify(token);
     return jwt.getSubject();
   }
+
+  @Override
+  public String generateToken(String phone) {
+   final var expire = Instant.now().plusMillis(EXPIRATION_TIME_20_MINUTES);
+    return JWT.create()
+        .withSubject(phone)
+        .withExpiresAt(expire)
+        .sign(ALGORITHM);
+  }
 }

@@ -8,8 +8,11 @@ import com.mequi.exceptions.ApiException;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.mapper.UserMapper;
 import com.mequi.repository.user.UserRepository;
+import com.mequi.repository.user.entity.UserPhone;
 import com.mequi.repository.user.entity.UserEntity;
+import com.mequi.service.auth.dto.PhoneAuthData;
 import com.mequi.service.user.UserService;
+import com.mequi.service.user.dto.PhoneDTO;
 import com.mequi.service.user.dto.UserDTO;
 import com.mequi.service.user.dto.UserData;
 import java.sql.SQLException;
@@ -36,8 +39,14 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Optional<UserEntity> findByPhone(String phone) {
-    return userRepository.findByPhone(phone);
+  public PhoneDTO findOrCreateByUserPhone(String phone) throws ApiException, JsonProcessingException, SQLException {
+    var optionalUserPhone = userRepository.findUserPhoneByPhone(phone);
+
+    if (optionalUserPhone.isPresent()) {
+      return userMapper.toPhoneDTO(optionalUserPhone.get());
+    }
+    
+    return createUserPhone(phone);
   }
 
   @Override
@@ -70,6 +79,15 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public PhoneDTO createUserPhone(String phone) throws ApiException, JsonProcessingException, SQLException {
+    final var userPhone = UserPhone.builder()
+        .phone(phone)
+        .build();
+    final var newUser = userRepository.createUserPhone(userPhone);
+    return userMapper.toPhoneDTO(newUser);
+  }
+  
+  @Override
   public void update(UserContext context) throws SQLException, JsonProcessingException, ApiException {
     final var userData = mapper.readValue(context.context().body(), UserDTO.class);
     final var userOptional = userRepository.findByEmail(userData.email());
@@ -89,5 +107,10 @@ public class UserServiceImpl implements UserService {
       throw new ApiException("user_id is null or invalid");
     }
     userRepository.delete(Long.parseLong(context.userId()));
+  }
+
+  @Override
+  public Optional<UserEntity> findByPhone(String phone) {
+    return userRepository.findByPhone(phone);
   }
 }

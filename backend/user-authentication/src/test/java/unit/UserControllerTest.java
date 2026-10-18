@@ -63,7 +63,7 @@ class UserControllerTest {
   @Test
   void testCreateUser() throws SQLException, JsonProcessingException, ApiException {
     // Arrange
-    final var userContext = new UserContext("/users", "", context);
+    final var userContext = new UserContext("/users", "", "", context);
     when(userContextService.apply(context)).thenReturn(userContext);
     when(service.create(any())).thenReturn(UserDTO.builder().build());
 

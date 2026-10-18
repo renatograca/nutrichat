@@ -86,7 +86,7 @@ public class UserServiceImplTest {
         .accountStatus(AccountStatus.ACTIVE)
         .build();
 
-    userContext = new UserContext("/users", "", context);
+    userContext = new UserContext("/users", "", "", context);
   }
 
   @Test
@@ -262,7 +262,7 @@ public class UserServiceImplTest {
   @Test
   void testDeleteUser() throws SQLException, ApiException {
     // Arrange
-    final var otherUserContext = new UserContext("/users", "1", context);
+    final var otherUserContext = new UserContext("/users", "", "", context);
 
     // Act
     userService.delete(otherUserContext);
@@ -274,7 +274,7 @@ public class UserServiceImplTest {
   @Test
   void testDeleteUserThrowsExceptionWhenUserIdIsInvalid() throws SQLException {
     // Arrange
-    final var otherUserContext = new UserContext("/users", "", context);
+    final var otherUserContext = new UserContext("/users", "", "", context);
 
     // Act & Assert
     ApiException exception = assertThrows(ApiException.class, () -> userService.delete(otherUserContext));

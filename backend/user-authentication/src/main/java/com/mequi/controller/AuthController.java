@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mequi.config.context.auth.AuthContextService;
 import com.mequi.controller.dto.AuthResponse;
+import com.mequi.exceptions.ApiException;
 import com.mequi.exceptions.BadRequestException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;
@@ -16,6 +17,9 @@ import com.mequi.utils.PasswordUtils;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
+
+import java.sql.SQLException;
+
 import org.eclipse.jetty.util.StringUtil;
 
 @Singleton
@@ -52,25 +56,20 @@ public class AuthController implements Controller {
     sendSuccessResponse(context, token, userEntity.id());
   }
 
-  public void loginWithPhone(Context context) throws BadRequestException, UserNotFoundException {
-    final PhoneAuthData authData;
-    try {
-      authData = mapper.readValue(context.body(), PhoneAuthData.class);
-    } catch (JsonProcessingException e) {
+  public void loginWithPhone(Context context) throws BadRequestException, UserNotFoundException, JsonProcessingException, ApiException, SQLException {
+    final var user = authContextService.apply(context).user();
+
+    if (user == null || user.phone() == null || !user.phone().matches("\\d{10,11}")) {
       throw new BadRequestException("Phone is Null or Invalid");
     }
 
-    if (authData == null || authData.phone() == null || !authData.phone().matches("\\d{10,11}")) {
-      throw new BadRequestException("Phone is Null or Invalid");
-    }
-
-    final var userEntity = userService.findByPhone(authData.phone()).orElse(null);
-    if (userEntity == null) {
+    final var phoneDTO = userService.findOrCreateByUserPhone(user.phone());
+    if (phoneDTO == null) {
       throw new UserNotFoundException("User not found");
     }
 
-    String token = authService.generateToken(userEntity.id());
-    sendSuccessResponse(context, token, userEntity.id());
+    String token = authService.generateToken(phoneDTO.phone());
+    sendSuccessResponse(context, token, phoneDTO.phone());
   }
 
   public void validateToken(Context context) {
@@ -92,6 +91,18 @@ public class AuthController implements Controller {
         .message("Authentication successful")
         .token(token)
         .userId(userId)
+        .build();
+
+    context.status(HttpStatus.OK);
+    context.json(authResponse);
+  }
+
+    private void sendSuccessResponse(Context context, String token, String phone) {
+    final var authResponse = AuthResponse.builder()
+        .message("Authentication successful")
+        .token(token)
+        .userId(null)
+        .userPhone(phone)
         .build();
 
     context.status(HttpStatus.OK);

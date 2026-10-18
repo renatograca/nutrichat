@@ -3,18 +3,26 @@ package com.mequi.repository.user.impl;
 import com.google.inject.Inject;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.repository.user.UserRepository;
+import com.mequi.repository.user.entity.UserPhone;
 import com.mequi.repository.user.entity.UserEntity;
 import com.mequi.service.user.dto.AccountStatus;
+import com.mequi.service.user.impl.UserServiceImpl;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+
 import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserRepositoryImpl implements UserRepository {
   private static final String ID = "id";
@@ -25,6 +33,8 @@ public class UserRepositoryImpl implements UserRepository {
   private static final String PHONE = "phone";
   private static final String ACCOUNT_STATUS = "account_status";
   private final DataSource dataSource;
+
+  private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
   @Override
   public Optional<UserEntity> findById(Long id) throws UserNotFoundException {
@@ -64,11 +74,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
     return Optional.empty();
   }
-
+  
   @Override
   public Optional<UserEntity> findByPhone(String phone) {
-    final var data = buildDataString(ID, FULL_NAME, PASSWORD_HASH, EMAIL, DATE_OF_BIRTH, PHONE, ACCOUNT_STATUS);
-    final var query = "SELECT " + data + " FROM users WHERE phone = ? AND account_status != 'DELETED'";
+final var data = buildDataString(ID, FULL_NAME, PASSWORD_HASH, EMAIL, DATE_OF_BIRTH, PHONE, ACCOUNT_STATUS);
+
+    final var query = "SELECT " + data + " FROM users WHERE phone = ?";
     try(
         final var conn = dataSource.getConnection();
         final var stmt = conn.prepareStatement(query)
@@ -78,9 +89,26 @@ public class UserRepositoryImpl implements UserRepository {
       if (resultSet.next()) {
         return Optional.of(mapUserEntity(resultSet));
       }
+    } catch (SQLException ignored) {
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<UserPhone> findUserPhoneByPhone(String phone) {
+    final var data = buildDataString(ID, PHONE);
+    final var query = "SELECT " + data + " FROM contacts WHERE phone = ?";
+    try(
+        final var conn = dataSource.getConnection();
+        final var stmt = conn.prepareStatement(query)
+    ) {
+      stmt.setString(1, phone);
+      final var resultSet = stmt.executeQuery();
+      if (resultSet.next()) {
+        return Optional.of(mapUserPhone(resultSet));
+      }
     } catch (SQLException e) {
       log.error("Error ao encontrar usuário pelo telefone");
-      throw new IllegalStateException("Error ao encontrar usuário pelo telefone", e);
     }
     return Optional.empty();
   }
@@ -109,6 +137,27 @@ public class UserRepositoryImpl implements UserRepository {
       throw new SQLException("Erro ao obter o usuário criado.");
     } catch (SQLException e) {
       log.error("Erro ao criar usuario");
+      throw e;
+    }
+  }
+
+
+  @Override
+  public UserPhone createUserPhone(UserPhone userPhone) throws SQLException {
+    final var query = "INSERT INTO contacts (phone) VALUES (?) RETURNING *";
+    try(
+        final var conn = dataSource.getConnection();
+        final var stmt = conn.prepareStatement(query)
+    ) {
+      stmt.setString(1, userPhone.phone());
+      final var resultSet = stmt.executeQuery();
+
+      if (resultSet.next()) {
+        return mapUserPhone(resultSet);
+      }
+      throw new SQLException("Erro ao obter o usuário criado.");
+    } catch (SQLException e) {
+      log.error("Erro ao criar usuario phone: {}", e.getMessage());
       throw e;
     }
   }
@@ -174,6 +223,14 @@ public class UserRepositoryImpl implements UserRepository {
 
   private String updateValue(String filed, String value) {
     return filed + " = " + "'" + value + "'";
+  }
+
+
+  private UserPhone mapUserPhone(ResultSet r) throws SQLException {
+    return UserPhone.builder()
+        .id(r.getLong(ID))
+        .phone(r.getString(PHONE))
+        .build();
   }
 
   private UserEntity mapUserEntity(ResultSet r) throws SQLException {
