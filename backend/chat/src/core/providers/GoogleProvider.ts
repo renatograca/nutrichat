@@ -19,7 +19,7 @@ class GoogleProvider extends BaseAIProvider {
 
   async embedText(text: any) {
     try {
-      const result = await (this as any).embeddingModel.embedContent(text);
+      const result = await this.embeddingModel.embedContent(text);
       return result.embedding.values;
     } catch (error: any) {
       throw new Error(`Erro ao gerar embedding: ${error.message}`);

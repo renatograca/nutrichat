@@ -1,0 +1,195 @@
+package unit;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.mequi.config.context.auth.AuthContextService;
+import com.mequi.config.context.auth.PhoneAuthContextService;
+import com.mequi.config.context.auth.dto.PhoneAuthContext;
+import com.mequi.controller.AuthController;
+import com.mequi.controller.dto.AuthResponse;
+import com.mequi.exceptions.ApiException;
+import com.mequi.exceptions.BadRequestException;
+import com.mequi.exceptions.InvalidPasswordException;
+import com.mequi.exceptions.UserNotFoundException;
+import com.mequi.repository.user.entity.UserEntity;
+import com.mequi.service.auth.AuthService;
+import com.mequi.service.auth.dto.PhoneAuthData;
+import com.mequi.service.auth.dto.UserAuthData;
+import com.mequi.service.user.UserService;
+import com.mequi.utils.PasswordUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+class AuthControllerTest {
+
+  @Mock
+  private AuthContextService authContextService;
+
+  @Mock
+  private PhoneAuthContextService phoneAuthContextService;
+
+  @Mock
+  private AuthService authService;
+
+  @Mock
+  private UserService userService;
+
+  @Mock
+  private ObjectMapper mapper;
+
+  @Mock
+  private Context context;
+
+  @InjectMocks
+  private AuthController authController;
+
+  @BeforeEach
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
+  }
+
+  @Test
+  void testLogin_Success() throws UserNotFoundException, InvalidPasswordException {
+    // Arrange
+    final var password = "password";
+    final var email = "test@example.com";
+    final var authContext = com.mequi.config.context.auth.dto.AuthContext.builder().user(UserAuthData.builder().email(email).password(password).build()).build();
+    final var userEntity = UserEntity.builder().id(1L).email(email).passwordHash(PasswordUtils.hash(password)).build();
+    final var token = "generatedToken";
+
+    when(authContextService.apply(context)).thenReturn(authContext);
+    when(userService.findByEmail(email)).thenReturn(Optional.of(userEntity));
+    when(authService.generateToken(1L)).thenReturn(token);
+
+    // Act
+    authController.login(context);
+
+    // Assert
+    verify(context).status(HttpStatus.OK);
+    verify(context).json(argThat(response -> {
+      final var authResponse = (AuthResponse) response;
+      return "Authentication successful".equals(authResponse.message()) &&
+          token.equals(authResponse.token()) &&
+          Long.valueOf(1L).equals(authResponse.userId());
+    }));
+  }
+
+  @Test
+  void testLogin_UserNotFound() {
+    // Arrange
+    final var email = "notfound@example.com";
+    final var authContext = com.mequi.config.context.auth.dto.AuthContext.builder().user(UserAuthData.builder().email(email).password("password").build()).build();
+
+    when(authContextService.apply(context)).thenReturn(authContext);
+    when(userService.findByEmail(email)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    assertThrows(ApiException.class, () -> authController.login(context));
+  }
+
+  @Test
+  void testLogin_InvalidPassword() {
+    // Arrange
+    final var correctPassword = "correctPassword";
+    final var wrongPassword = "wrongPassword";
+    final var email = "test@example.com";
+    final var authContext = com.mequi.config.context.auth.dto.AuthContext.builder().user(UserAuthData.builder().email(email).password(wrongPassword).build()).build();
+    final var userEntity = UserEntity.builder().id(1L).email(email).passwordHash(PasswordUtils.hash(correctPassword)).build();
+
+    when(authContextService.apply(context)).thenReturn(authContext);
+    when(userService.findByEmail(email)).thenReturn(Optional.of(userEntity));
+
+    // Act & Assert
+    assertThrows(InvalidPasswordException.class, () -> authController.login(context));
+  }
+
+  @Test
+  void testLoginWithPhone_Success() throws Exception {
+    final var phone = "01123456789";
+    final var userEntity = UserEntity.builder().id(1L).phone(phone).build();
+    final var token = "generatedToken";
+    final var phoneAuthData = new PhoneAuthData(phone);
+    final var phoneAuthContext = PhoneAuthContext.builder().phone(phoneAuthData).build();
+
+    when(phoneAuthContextService.apply(context)).thenReturn(phoneAuthContext);
+    when(userService.findByPhone(phone)).thenReturn(Optional.of(userEntity));
+    when(authService.generateToken(phone)).thenReturn(token);
+
+    authController.loginWithPhone(context);
+
+    verify(context).status(HttpStatus.OK);
+    verify(context).json(argThat(response -> {
+      final var authResponse = (AuthResponse) response;
+      return token.equals(authResponse.token()) && phone.equals(authResponse.userPhone());
+    }));
+  }
+
+  @Test
+  void testLoginWithPhone_InvalidPhone() throws Exception {
+    final var phoneAuthData = new PhoneAuthData("123");
+    final var phoneAuthContext = PhoneAuthContext.builder().phone(phoneAuthData).build();
+
+    when(phoneAuthContextService.apply(context)).thenReturn(phoneAuthContext);
+
+    assertThrows(BadRequestException.class, () -> authController.loginWithPhone(context));
+  }
+
+  @Test
+  void testLoginWithPhone_UserNotFound() throws Exception {
+    final var phone = "01123456789";
+    final var phoneAuthData = new PhoneAuthData(phone);
+    final var phoneAuthContext = PhoneAuthContext.builder().phone(phoneAuthData).build();
+
+    when(phoneAuthContextService.apply(context)).thenReturn(phoneAuthContext);
+    when(userService.findByPhone(phone)).thenReturn(Optional.empty());
+
+    assertThrows(UserNotFoundException.class, () -> authController.loginWithPhone(context));
+  }
+
+  @Test
+  void testValidateToken_Success() {
+    // Arrange
+    final var token = "validToken";
+    final var userId = "1";
+    when(context.header("Authorization")).thenReturn("Bearer " + token);
+    when(authService.validateToken(token)).thenReturn(userId);
+
+    // Act
+    authController.validateToken(context);
+
+    // Assert
+    verify(authService).validateToken(token);
+    verify(context).status(HttpStatus.OK);
+    verify(context).json(argThat(response -> {
+      final var authResponse = (AuthResponse) response;
+      return "Token is valid".equals(authResponse.message()) &&
+          Long.valueOf(1L).equals(authResponse.userId());
+    }));
+  }
+
+  @Test
+  void testValidateToken_Invalid() {
+    // Arrange
+    final var token = "invalidToken";
+    when(context.header("Authorization")).thenReturn("Bearer " + token);
+    when(authService.validateToken(token)).thenThrow(new RuntimeException("Invalid token"));
+
+    // Act
+    authController.validateToken(context);
+
+    // Assert
+    verify(context).status(HttpStatus.UNAUTHORIZED);
+  }
+}

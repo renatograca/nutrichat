@@ -37,7 +37,6 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
     try {
       setLoading(true)
       const info = await getChat(chatId)
-      console.log('Chat info loaded:', info)
       setChatInfo(info)
       
       try {
@@ -132,7 +131,6 @@ export default function ChatView({ chatId, onBack, onTitleUpdate }) {
   }
 
   const hasDocument = !!(chatInfo?.document_id || chatInfo?.documentId)
-  console.log('Rendering ChatView, hasDocument:', hasDocument, 'chatInfo:', chatInfo)
 
   return (
     <div className="d-flex flex-column h-100 bg-white">

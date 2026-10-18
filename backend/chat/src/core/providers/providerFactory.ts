@@ -1,6 +1,6 @@
 import GoogleProvider from './GoogleProvider.js';
 
-function getAIProvider() {
+function getAIProvider(): GoogleProvider {
   const providerName = (process.env.AI_PROVIDER || 'google').toLowerCase();
 
   if (providerName === 'google') {
@@ -9,7 +9,7 @@ function getAIProvider() {
   throw new Error(`Provider de IA desconhecido: ${providerName}`);
 }
 
-function getEmbeddingProvider() {
+function getEmbeddingProvider(): GoogleProvider {
   const providerName = (process.env.EMBEDDING_PROVIDER || 'google').toLowerCase();
 
   if (providerName === 'google') {

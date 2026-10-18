@@ -4,6 +4,7 @@ import ChatRepository from '../repositories/ChatRepository.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { validationAccessToChat } from '../utils/ValidationsUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +20,7 @@ async function askQuestion(question: any, userId: number, chatId: any = null, to
     let documentId: any = null;
     if (chatId) {
       const chat = await chatRepository.getChat(chatId);
-      if (!chat || chat.user_id !== userId) {
+      if (validationAccessToChat(false, userId, '', chat)) {
         throw new Error('Chat não encontrado ou não pertence ao usuário');
       }
       documentId = chat.document_id;

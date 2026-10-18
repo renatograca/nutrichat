@@ -1,10 +1,10 @@
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { logger } from './logger';
 
 async function extractTextFromPdf(fileBytes: any) {
   try {
     const data = new Uint8Array(fileBytes);
 
-    // No Node.js com a versão legacy, podemos carregar o worker manualmente
     // @ts-ignore
     if (!pdfjs.GlobalWorkerOptions.workerSrc) {
        // @ts-ignore
@@ -37,7 +37,6 @@ async function extractTextFromPdf(fileBytes: any) {
 
     return text.trim();
   } catch (error: any) {
-    console.error("Erro técnico PDF.js:", error);
     throw new Error(`Erro ao extrair texto do PDF: ${error.message}`);
   }
 }

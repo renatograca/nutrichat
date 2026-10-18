@@ -1,15 +1,19 @@
-import { USER_BASE_URL } from './config'
+import { USER_BASE_URL, logFetchError } from './config'
 
 export async function fetchUserByEmail(email) {
-  const res = await fetch(`${USER_BASE_URL}/users/${encodeURIComponent(email)}`)
-  if (!res.ok) throw new Error('user not found')
+  const url = `${USER_BASE_URL}/users/${encodeURIComponent(email)}`
+  const res = await fetch(url)
+  if (!res.ok) {
+    await logFetchError(res, url)
+    throw new Error('user not found')
+  }
   return await res.json()
 }
 
 export async function register(userData) {
   try {
-    console.log('USER_BASE_URL:', USER_BASE_URL)
-    const res = await fetch(`${USER_BASE_URL}/users/`, {
+    const url = `${USER_BASE_URL}/users`
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -22,7 +26,10 @@ export async function register(userData) {
         phone: userData.phone
       })
     })
-    if (!res.ok) throw new Error('registration failed')
+    if (!res.ok) {
+      await logFetchError(res, url, { action: 'register' })
+      throw new Error('registration failed')
+    }
     return await res.json()
   } catch (err) {
     if (err.message === 'Failed to fetch' || err.name === 'TypeError') {

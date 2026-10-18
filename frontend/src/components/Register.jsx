@@ -67,7 +67,8 @@ export default function Register() {
     }
 
     // Validar formato (00) 00000-0000 ou (00) 0000-0000
-    if (formData.phone.length < 14) {
+    const phoneDigits = formData.phone.replace(/\D/g, '')
+    if (![10, 11].includes(phoneDigits.length)) {
       setError('Telefone inválido. Use (00) 00000-0000.')
       setLoading(false)
       return
@@ -76,7 +77,7 @@ export default function Register() {
     try {
       const payload = {
         ...formData,
-        phone: parseInt(formData.phone.replace(/\D/g, ''), 10)
+        phone: phoneDigits
       }
       await register(payload)
       setSuccess(true)

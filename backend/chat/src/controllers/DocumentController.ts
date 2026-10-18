@@ -1,6 +1,7 @@
 import { ingestPdf } from '../services/DocumentService.js';
 import ChatRepository from '../repositories/ChatRepository.js';
 import { logger } from '../utils/logger.js';
+import { getId, validationAccessToChat } from '../utils/ValidationsUtils.js';
 
 const chatRepository = new ChatRepository();
 
@@ -8,9 +9,8 @@ export const ingestDocument = async (req: any, res: any) => {
   try {
     const file = req.file;
     const { user_id, chat_id } = req.body;
-    const userId = Number(user_id);
-
-    logger.info(`Iniciando ingestão de documento: filename=${file?.originalname}, user_id=${userId}, chat_id=${chat_id}`);
+    const { phone, auth_by_phone } = req.query;
+    const id = getId(auth_by_phone, Number(user_id), phone);
 
     if (!file) {
       return res
@@ -19,17 +19,16 @@ export const ingestDocument = async (req: any, res: any) => {
     }
 
     if (!file.originalname.toLowerCase().endsWith('.pdf')) {
-      return res.status(200).json({
+      return res.status(400).json({
         message: 'Por favor, envie um PDF válido.',
         chunks_count: 0,
-        user_id: userId,
+        user_id: id,
         document_id: null,
       });
     }
 
-    const result = await ingestPdf(file.buffer, file.originalname, userId, chat_id);
+    const result = await ingestPdf(file.buffer, file.originalname, id, chat_id);
 
-    // Se foi passado chat_id, associar o documento ao chat
     if (chat_id) {
       const chat = await chatRepository.getChat(chat_id);
       if (!chat) {
@@ -40,16 +39,15 @@ export const ingestDocument = async (req: any, res: any) => {
             detail: 'Chat não encontrado',
           });
       }
-      
-      if (chat.user_id !== userId) {
-        logger.warn(`Usuário ${userId} tentou associar documento ao chat ${chat_id} que pertence a outro usuário`);
+
+      if (validationAccessToChat(auth_by_phone, id, phone, chat)) {
+        logger.warn(`Usuário ${id} tentou associar documento ao chat ${chat_id} que pertence a outro usuário`);
         return res
           .status(403)
           .json({
             detail: 'O chat informado não pertence a este usuário',
           });
       }
-      // Associação
       await chatRepository.updateChatDocument(chat_id, result.document_id);
     }
 
@@ -59,4 +57,3 @@ export const ingestDocument = async (req: any, res: any) => {
     res.status(400).json({ detail: error.message });
   }
 };
-

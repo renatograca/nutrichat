@@ -1,5 +1,7 @@
 import pool from '../db/pool.js';
 import { logger } from '../utils/logger.js';
+import { ChatEntity } from './entity/ChatEntity.js';
+import { MessageEntity } from './entity/MessageEntity.js';
 
 class ChatRepository {
   constructor() {
@@ -65,12 +67,13 @@ class ChatRepository {
     }
   }
 
-  async createChat(userId: number, title: any = null) {
+  async createChat(userId: Number, title: any = null): Promise<string> {
     const client = await pool.connect();
     try {
+      logger.info(`Criando chat para userId: ${userId} com título: ${title}`);
       const result = await client.query(
         'INSERT INTO chats (user_id, title) VALUES ($1, $2) RETURNING id',
-        [userId, title]
+        [String(userId), title]
       );
       return result.rows[0].id.toString();
     } catch (error: any) {
@@ -81,7 +84,7 @@ class ChatRepository {
     }
   }
 
-  async updateChatDocument(chatId: any, documentId: any) {
+  async updateChatDocument(chatId: any, documentId: any): Promise<void> {
     const client = await pool.connect();
     try {
       await client.query(
@@ -96,7 +99,7 @@ class ChatRepository {
     }
   }
 
-  async updateChatTitle(chatId: any, title: any) {
+  async updateChatTitle(chatId: any, title: any): Promise<void> {
     const client = await pool.connect();
     try {
       await client.query(
@@ -111,7 +114,7 @@ class ChatRepository {
     }
   }
 
-  async getUserChats(userId: number) {
+  async getUserChats(userId: number): Promise<ChatEntity[]> {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -120,7 +123,7 @@ class ChatRepository {
       );
       return result.rows.map((r: any) => ({
         id: r.id.toString(),
-        user_id: Number(r.user_id),
+        user_id: r.user_id,
         document_id: r.document_id ? r.document_id.toString() : null,
         title: r.title,
         created_at: r.created_at,
@@ -134,7 +137,7 @@ class ChatRepository {
     }
   }
 
-  async getChat(chatId: any) {
+  async getChat(chatId: string): Promise<ChatEntity | null> {
     const client = await pool.connect();
     try {
       const result = await client.query(
@@ -145,7 +148,7 @@ class ChatRepository {
       if (r) {
         return {
           id: r.id.toString(),
-          user_id: Number(r.user_id),
+          user_id: r.user_id,
           document_id: r.document_id ? r.document_id.toString() : "",
           title: r.title,
           created_at: r.created_at,
@@ -161,7 +164,7 @@ class ChatRepository {
     }
   }
 
-  async deleteChat(chatId: any) {
+  async deleteChat(chatId: any): Promise<void> {
     const client = await pool.connect();
     try {
       await client.query('DELETE FROM chats WHERE id = $1', [chatId]);
@@ -173,7 +176,7 @@ class ChatRepository {
     }
   }
 
-  async addMessage(chatId: any, role: any, content: any) {
+  async addMessage(chatId: any, role: any, content: any): Promise<void> {
     const client = await pool.connect();
     try {
       await client.query(
@@ -192,7 +195,7 @@ class ChatRepository {
     }
   }
 
-  async getChatMessages(chatId: any, limit: any = 50) {
+  async getChatMessages(chatId: any, limit: any = 50): Promise<MessageEntity[]> {
     const client = await pool.connect();
     try {
       const result = await client.query(

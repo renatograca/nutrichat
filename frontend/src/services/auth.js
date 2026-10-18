@@ -1,23 +1,28 @@
-import { USER_BASE_URL } from './config'
+import { USER_BASE_URL, logFetchError } from './config'
 
-export async function login({ email, password }) {
+async function authenticate(path, credentials) {
   try {
-    const res = await fetch(`${USER_BASE_URL}/auth/login/`, {
+    const url = `${USER_BASE_URL}${path}`
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify(credentials)
     })
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}))
+      let errorData
+      try { errorData = await res.json() } catch { errorData = {} }
+      await logFetchError(res, url, { path, body: errorData })
       const error = new Error(errorData.message || 'login failed')
       error.status = res.status
       throw error
     }
     const data = await res.json()
+
     if (data?.token) {
       try { 
         localStorage.setItem('auth_token', data.token) 
         if (data.user_id) localStorage.setItem('user_id', data.user_id)
+        if (data.user_phone) localStorage.setItem('phone', data.user_phone)
       } catch {}
     }
     return data
@@ -29,21 +34,31 @@ export async function login({ email, password }) {
   }
 }
 
+export async function login({ email, password }) {
+  return authenticate('/auth/login/', { email, password })
+}
+
+export async function loginWithPhone({ phone }) {
+  return authenticate('/auth/chat/login/', { phone: phone.replace(/\D/g, '') })
+}
+
 export async function validateToken() {
   const token = localStorage.getItem('auth_token')
   if (!token) return null
   try {
-    const res = await fetch(`${USER_BASE_URL}/auth/validate/`, {
+    const url = `${USER_BASE_URL}/auth/validate?auth_by_phone=true`
+    const res = await fetch(url, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': token }
     })
     if (!res.ok) {
+      await logFetchError(res, url, { action: 'validateToken' })
       logout()
       return null
     }
     const data = await res.json()
-    if (data?.user_id) {
-      try { localStorage.setItem('user_id', data.user_id) } catch {}
+    if (data?.user_id || data?.user_phone) {
+      try { localStorage.setItem('user_id', data.user_id), localStorage.setItem('phone', data.user_phone) } catch {}
       return data
     } else {
       // Se validou o token mas não retornou user_id, consideramos inválido para o app

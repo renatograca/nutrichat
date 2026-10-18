@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import Login from './components/Login'
+import PhoneLogin from './components/PhoneLogin'
 import Register from './components/Register'
 import OfflineScreen from './components/OfflineScreen'
 import { logout, validateToken } from './services/auth'
+import { setOnUnauthenticated } from './services/chatApi'
 
 function isAuthenticated() {
   try { 
-    return !!localStorage.getItem('auth_token') && !!localStorage.getItem('user_id')
+    return !!localStorage.getItem('auth_token') 
+    && (!!localStorage.getItem('user_id') || !!localStorage.getItem('phone'))
   } catch { 
     return false 
   }
@@ -18,9 +20,9 @@ export default function AuthGate({ children }) {
   const [loading, setLoading] = useState(true)
   const [isOffline, setIsOffline] = useState(false)
   const navigate = useNavigate()
-  const location = useLocation()
 
   async function checkAuth() {
+    console.log('Checking authentication status...')
     setLoading(true)
     setIsOffline(false)
     if (isAuthenticated()) {
@@ -35,8 +37,10 @@ export default function AuthGate({ children }) {
         }
       }
     } else {
+      console.log('User is not authenticated.')
       setAuthed(false)
     }
+    console.log('Authentication check complete. Authenticated:', authed, 'Offline:', isOffline)
     setLoading(false)
   }
 
@@ -45,14 +49,22 @@ export default function AuthGate({ children }) {
   }, [])
 
   useEffect(() => {
-    if (!loading) {
-      setAuthed(isAuthenticated())
-    }
-  }, [location, loading])
+    setOnUnauthenticated(() => {
+      logout()
+      setAuthed(false)
+      navigate('/login', { replace: true })
+    })
+  }, [navigate])
 
   function handleLoginSuccess() {
     setAuthed(true)
-    navigate('/')
+    navigate('/', { replace: true })
+  }
+
+  function handleLogout() {
+    logout()
+    setAuthed(false)
+    navigate('/login', { replace: true })
   }
 
   if (isOffline) {
@@ -69,34 +81,22 @@ export default function AuthGate({ children }) {
     )
   }
 
+  // Se NÃO estiver autenticado
   if (!authed) {
     return (
       <Routes>
-        <Route 
-          path="/login" 
-          element={<Login onLoginSuccess={handleLoginSuccess} />} 
-        />
-        <Route 
-          path="/register" 
-          element={<Register onRegisterSuccess={() => navigate('/login')} />} 
-        />
+        <Route path="/login" element={<PhoneLogin onLoginSuccess={handleLoginSuccess} />} />
+        <Route path="/register" element={<Register onRegisterSuccess={() => navigate('/login')} />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     )
   }
 
-  function handleLogout() {
-    logout()
-    setAuthed(false)
-    navigate('/login')
-  }
-
+  // Se ESTIVER autenticado
   return (
     <div className="d-flex flex-column h-100 bg-light">
       <main className="flex-grow-1 overflow-hidden">
         <Routes>
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/register" element={<Navigate to="/" replace />} />
           <Route path="/" element={React.cloneElement(children, { onLogout: handleLogout })} />
           <Route path="/chat/:chatId" element={React.cloneElement(children, { onLogout: handleLogout })} />
           <Route path="*" element={<Navigate to="/" replace />} />
