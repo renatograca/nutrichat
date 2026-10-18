@@ -3,7 +3,7 @@ import cors from 'cors';
 import { PORT } from './config/config.js';
 import chatRoutes from './routes/chatRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
-import { logRequestsMiddleware } from './middlewares/logMiddleware.js';
+import { logRequestsMiddleware, verifyAccess } from './middlewares/logMiddleware.js';
 import { logger } from './utils/logger.js';
 
 const app = express();
@@ -41,7 +41,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(logRequestsMiddleware);
+app.use(logRequestsMiddleware, verifyAccess);
 app.use(express.json());
 
 app.get('/health', (req: any, res: any) => {

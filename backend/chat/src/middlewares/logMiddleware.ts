@@ -17,5 +17,17 @@ const logRequestsMiddleware = (req: any, res: any, next: any) => {
   next();
 };
 
-export { logRequestsMiddleware };
+const verifyAccess = (req: any, res: any, next: any) => {
+  const { user_id, phone, auth_by_phone } = req.query;
+
+  if (auth_by_phone && !user_id) {
+    return (req: any, res: any) => res.status(400).json({ detail: 'user_id é obrigatório' });
+  }
+
+  if (!auth_by_phone && !phone) {
+    return(req: any, res: any) => res.status(400).json({ detail: 'phone é obrigatório' });
+  }
+}
+
+export { logRequestsMiddleware, verifyAccess };
 

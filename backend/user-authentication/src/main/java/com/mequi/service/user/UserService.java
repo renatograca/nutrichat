@@ -5,7 +5,6 @@ import com.mequi.config.context.user.UserContext;
 import com.mequi.exceptions.ApiException;
 import com.mequi.exceptions.UserNotFoundException;
 import com.mequi.repository.user.entity.UserEntity;
-import com.mequi.service.auth.dto.PhoneAuthData;
 import com.mequi.service.user.dto.PhoneDTO;
 import com.mequi.service.user.dto.UserDTO;
 import java.sql.SQLException;

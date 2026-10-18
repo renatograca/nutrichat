@@ -8,13 +8,9 @@ const chatRepository = new ChatRepository();
 export const createChat = async (req: any, res: any) => {
   try {
     const { user_id, phone, auth_by_phone, title } = req.body;
-    const userId = user_id ? Number(user_id) : null;
+    const id = getId(auth_by_phone, Number(user_id), phone);
 
-    if (userId === null || isNaN(userId)) {
-      return res.status(400).json({ detail: 'user_id inválido' });
-    }
-
-    const chatId = await chatRepository.createChat(userId, title || null);
+    const chatId = await chatRepository.createChat(id, title || null);
     const chat = await chatRepository.getChat(chatId);
 
     res.status(201).json(chat);
@@ -28,7 +24,7 @@ export const associateDocument = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { document_id, user_id, phone, auth_by_phone } = req.body;
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
 
     if (!document_id) {
       return res.status(400).json({ detail: 'documentId é obrigatório' });
@@ -51,7 +47,7 @@ export const updateChat = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { title, user_id, phone, auth_by_phone } = req.body;
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
 
     const chat = await chatRepository.getChat(chatId);
     if (!chat || chat.user_id !== userId) {
@@ -77,7 +73,7 @@ export const listChats = async (req: any, res: any) => {
       return res.status(404).json({ detail: 'user_id is empty' });
     }
 
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
     const chats = await chatRepository.getUserChats(userId);
     res.json(chats);
   } catch (error: any) {
@@ -95,7 +91,7 @@ export const getChat = async (req: any, res: any) => {
       return res.status(400).json({ detail: 'user_id é obrigatório' });
     }
 
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
     const chat = await chatRepository.getChat(chatId);
     if (!chat || chat.user_id !== userId) {
       logger.error(`Chat não encontrado para o usuário ${userId}, chatId: ${chatId}`);
@@ -118,9 +114,9 @@ export const getChatMessages = async (req: any, res: any) => {
       return res.status(400).json({ detail: 'user_id é obrigatório' });
     }
 
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== userId) {
+    if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -136,10 +132,10 @@ export const sendMessage = async (req: any, res: any) => {
   try {
     const { chatId } = req.params;
     const { message, user_id, phone, auth_by_phone } = req.body;
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
 
     const chat = await chatRepository.getChat(chatId);
-    if (!chat || chat.user_id !== userId) {
+    if (validationAccessToChat(auth_by_phone, userId, phone, chat)) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
     }
 
@@ -177,9 +173,7 @@ export const deleteChat = async (req: any, res: any) => {
     const { chatId } = req.params;
     const { user_id, phone, auth_by_phone } = req.query;
 
-    verifyAccess(auth_by_phone, user_id, phone)(req, res);
-
-    const userId = Number(user_id);
+    const userId = getId(auth_by_phone, Number(user_id), phone);
     const chat = await chatRepository.getChat(chatId);
     if (!chat || chat.user_id !== userId) {
       return res.status(404).json({ detail: 'Chat não encontrado' });
@@ -201,12 +195,9 @@ const validationAccessToChat = (auth_by_phone: boolean, user_id: number, phone: 
   return !chat || chat.user_id !== user_id;
 }
 
-const verifyAccess = (auth_by_phone: boolean, user_id: number, phone: string) => {
-  if (auth_by_phone && !user_id) {
-    return (req: any, res: any) => res.status(400).json({ detail: 'user_id é obrigatório' });
+const getId = (auth_by_phone: boolean, user_id: number, phone: string) => {
+  if (auth_by_phone && phone) {
+    return Number(phone);
   }
-
-  if (!auth_by_phone && !phone) {
-    return(req: any, res: any) => res.status(400).json({ detail: 'phone é obrigatório' });
-  }
+  return user_id;
 }

@@ -13,6 +13,11 @@ export function getUserId() {
   catch { return null }
 }
 
+export function getPhoneUser() {
+  try { return localStorage.getItem('phone') }
+  catch { return null }
+}
+
 export async function logFetchError(res, url, context = {}) {
   let body
   try { body = await res.json().catch(() => null) } catch {}

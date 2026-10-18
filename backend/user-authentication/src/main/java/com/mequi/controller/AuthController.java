@@ -7,6 +7,7 @@ import com.mequi.config.context.auth.AuthContextService;
 import com.mequi.config.context.auth.PhoneAuthContextService;
 import com.mequi.config.context.auth.dto.PhoneAuthContext;
 import com.mequi.controller.dto.AuthResponse;
+import com.mequi.exceptions.ApiException;
 import com.mequi.exceptions.BadRequestException;
 import com.mequi.exceptions.InvalidPasswordException;
 import com.mequi.exceptions.UserNotFoundException;
@@ -17,6 +18,9 @@ import com.mequi.utils.PasswordUtils;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
+
+import java.sql.SQLException;
+
 import org.eclipse.jetty.util.StringUtil;
 
 @Singleton
@@ -53,7 +57,7 @@ public class AuthController implements Controller {
     sendSuccessResponse(context, token, userEntity.id());
   }
 
-  public void loginWithPhone(Context context) throws BadRequestException, UserNotFoundException {
+  public void loginWithPhone(Context context) throws BadRequestException, UserNotFoundException, JsonProcessingException, ApiException, SQLException {
     final var phoneAuthContext = phoneAuthContextService.apply(context);
     final var phoneAuthData = phoneAuthContext.phone();
 
@@ -61,9 +65,9 @@ public class AuthController implements Controller {
       throw new BadRequestException("Phone is Null or Invalid");
     }
 
-    final var userEntity = userService.findByPhone(phoneAuthData.phone()).orElse(null);
+    final var phone = userService.findOrCreateByUserPhone(phoneAuthData.phone());
 
-    if (userEntity == null) {
+    if (phone == null) {
       throw new UserNotFoundException("User not found");
     }
 
