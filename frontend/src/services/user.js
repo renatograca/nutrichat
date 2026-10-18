@@ -12,8 +12,7 @@ export async function fetchUserByEmail(email) {
 
 export async function register(userData) {
   try {
-    console.log('USER_BASE_URL:', USER_BASE_URL)
-    const url = `${USER_BASE_URL}/users/`
+    const url = `${USER_BASE_URL}/users`
     const res = await fetch(url, {
       method: 'POST',
       headers: { 

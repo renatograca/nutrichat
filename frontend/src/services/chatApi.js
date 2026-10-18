@@ -38,7 +38,6 @@ export async function getChat(chatId) {
   const url = `${CHAT_BASE_URL}/api/chats/${chatId}?${paramAccessByPhone(phone)}`
   const res = await fetch(url, { headers: getHeaders() })
   const data = await handleJson(res, url, 'Failed to fetch chat')
-  console.log('getChat response:', data)
   return data
 }
 

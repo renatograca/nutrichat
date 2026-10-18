@@ -17,7 +17,6 @@ async function authenticate(path, credentials) {
       throw error
     }
     const data = await res.json()
-        console.log('validateToken response:', { data})
 
     if (data?.token) {
       try { 
@@ -58,7 +57,6 @@ export async function validateToken() {
       return null
     }
     const data = await res.json()
-    logger.info(`validateToken response:  ${ JSON.stringify({ data }) }`)
     if (data?.user_id || data?.phone) {
       try { localStorage.setItem('user_id', data.user_id), localStorage.setItem('phone', data.phone) } catch {}
       return data
