@@ -1,3 +1,0 @@
-@startuml UserContext
-Bob -> Alice : hello
-@enduml
